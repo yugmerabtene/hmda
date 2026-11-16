@@ -1,7 +1,5 @@
 # Hacking-v2 - Cours MITRE ATT&CK
 
-Private repository containing the complete hacking course framework with 5 chapters of practical labs.
-
 ## Course Structure
 
 | Chapter | Title | Focus |
