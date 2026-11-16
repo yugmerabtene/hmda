@@ -47,6 +47,3 @@
 
 > Ce cours est destiné à des fins éducatives uniquement. Toutes les attaques et manipulations sont effectuées dans un environnement de laboratoire isolé sans accès Internet sortant. Ne jamais appliquer ces techniques sur des systèmes réels sans autorisation administrative systémique.
 
-## Contact
-
-Send mail to: yug.merabtene@gmail.com • Repository managed by yugmerabtene (https://github.com/yugmerabtene)
