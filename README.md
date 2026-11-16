@@ -1,4 +1,4 @@
-# Hacking-v2 - Cours MITRE ATT&CK
+# Techniques de hacking et contre-mesures — Niveau 2
 
 ## Structure du cours
 
