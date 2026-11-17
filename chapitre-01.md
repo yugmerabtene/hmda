@@ -4491,27 +4491,61 @@ Le fichier `run-all.txt` conserve la console complète ; les fichiers `msf-*.txt
 
 **Exemple de commande**
 
+Bloc A — enregistrer une preuve par CVE :
+
 ```bash
 cd ~/preuves/ch1-lab7
 for cve in CVE-2011-2523 CVE-2007-2447 CVE-2010-2075 CVE-2004-2687 CVE-2010-4221 CVE-2011-3192 CVE-2012-1823 CVE-2008-0166 CVE-2008-0600 CVE-2008-0010 CVE-2008-0009 CVE-2021-4158; do
-  printf '%s: ' "$cve"
-  searchsploit --cve "$cve" 2>&1 | grep -c 'Exploit Title'
+  prouve "cve-$cve.txt" searchsploit --disable-colour --cve "$cve" || true
 done
+```
+
+Bloc B — enregistrer le compteur :
+
+```bash
+prouve qualification-cve.txt bash -c '
+for cve in CVE-2011-2523 CVE-2007-2447 CVE-2010-2075 CVE-2004-2687 CVE-2010-4221 CVE-2011-3192 CVE-2012-1823 CVE-2008-0166 CVE-2008-0600 CVE-2008-0010 CVE-2008-0009 CVE-2021-4158; do
+  printf "%s: " "$cve"
+  grep -c "Exploit Title" "cve-$cve.txt" || true
+done
+'
 ```
 
 **Explication de la commande**
 
-- `cd ~/preuves/ch1-lab7` : place le shell dans le répertoire des preuves.
-- `for cve in ...; do ... done` : boucle sur les douze CVE.
-- `printf '%s: ' "$cve"` : affiche le code CVE sans retour à la ligne.
-- `searchsploit --cve "$cve"` : interroge la base locale pour la CVE.
-- `2>&1` : redirige les erreurs vers la sortie standard.
-- `grep -c 'Exploit Title'` : compte les blocs de résultats.
+- `cd ~/preuves/ch1-lab7` : place le shell dans le répertoire des preuves ; les fichiers `cve-CVE-*.txt`, `qualification-cve.txt` et `resultats-cve-v3.csv` y sont écrits.
+- `for cve in ...; do ... done` : boucle sur les douze codes CVE, un par un.
+- `prouve "cve-$cve.txt"` : enregistre la sortie de la commande dans le fichier `cve-CVE-....txt` et y ajoute les lignes `# date:`, `# cmd:` et `# rc=` ; le préfixe `cve-` et le suffixe `.txt` sont concaténés au code de la CVE.
+- `searchsploit --disable-colour --cve "$cve"` : interroge la base Exploit-DB locale sur les métadonnées de la CVE.
+- `--disable-colour` : supprime les séquences ANSI de la sortie pour garder une preuve lisible.
+- `--cve "$cve"` : recherche le code CVE complet, préfixe `CVE-` compris, dans les métadonnées de la base.
+- `|| true` : neutralise le code retour non nul de `searchsploit` lorsqu'aucun résultat n'est trouvé ; la boucle continue et les CVE suivantes sont traitées.
+- Dans le bloc B, `prouve qualification-cve.txt` : enregistre la console du compteur et son code retour dans `qualification-cve.txt`.
+- `bash -c '...'` : exécute la boucle de comptage dans un shell enfant ; les guillemets simples protègent le script des expansions du shell appelant.
+- `printf "%s: " "$cve"` : affiche le code CVE sans retour à la ligne, pour que le compteur apparaisse sur la même ligne.
+- `grep -c "Exploit Title" "cve-$cve.txt"` : compte les lignes `Exploit Title` dans le fichier de preuve de la CVE.
+- Second `|| true` : neutralise le code retour 1 de `grep -c` quand le compte est zéro ; sans lui, la dernière itération de `bash -c` retournerait 1 et `qualification-cve.txt` afficherait `# rc=1` au lieu de `# rc=0`.
 - Piège courant : `grep 'No Results'` peut matcher `Shellcodes: No Results` et faire croire à tort qu'une CVE est absente. Comptez le bloc `Exploit Title` ou lisez le fichier `cve-*.txt`.
 
 **Résultat attendu**
 
-Onze lignes avec `1` et une ligne avec `0` (`CVE-2021-4158`, CVE QEMU hôte hors Exploit-DB).
+```text
+CVE-2011-2523: 1
+CVE-2007-2447: 1
+CVE-2010-2075: 1
+CVE-2004-2687: 1
+CVE-2010-4221: 1
+CVE-2011-3192: 1
+CVE-2012-1823: 1
+CVE-2008-0166: 1
+CVE-2008-0600: 1
+CVE-2008-0010: 1
+CVE-2008-0009: 1
+CVE-2021-4158: 0
+# rc=0
+```
+
+Onze lignes avec `1` et une ligne avec `0` (`CVE-2021-4158`, CVE QEMU hôte hors Exploit-DB). Chaque fichier `cve-CVE-*.txt` contient la sortie `searchsploit` et son propre `# rc=` ; la dernière preuve, `qualification-cve.txt`, se termine par `# rc=0`.
 
 **Tableau de qualification**
 
@@ -4532,7 +4566,59 @@ Onze lignes avec `1` et une ligne avec `0` (`CVE-2021-4158`, CVE QEMU hôte hors
 
 **Lecture** — quatre CVE sont **abouties** : une session a été obtenue et une commande a été exécutée (`# rc=0`). Huit CVE sont **non abouties** dans ce périmètre, avec une justification vérifiable : version hors plage, DoS interdit, configuration CGI absente, validation de version seule, privesc local non testé et CVE hôte hors périmètre. Les 11 CVE cibles sont présentes dans la base Exploit-DB de Kali ; la douzième, `CVE-2021-4158`, est une CVE QEMU/ACPI qui ne concerne ni Metasploitable 2 ni VirtualBox et ne doit pas être testée (DoS). Le lab documente l'exception au lieu de forcer une conclusion. Les CVE non exécutées sont des décisions de périmètre ou de configuration, pas des oublis.
 
-**Preuve** — `preuves/ch1-lab7/resultats-cve-v3.csv` (12 lignes) et sortie du compteur.
+**Écrire le CSV de synthèse**
+
+Le tableau de qualification est ensuite écrit dans un fichier CSV, source unique pour le rapport et pour la mise à jour de la matrice de risques.
+
+**Exemple de commande**
+
+```bash
+cat > resultats-cve-v3.csv <<'CSV'
+cible,vecteur,cve,module_ou_commande,statut,preuve,resultat,limite
+192.168.56.103,ftp,CVE-2011-2523,exploit/unix/ftp/vsftpd_234_backdoor,exploitee,exploitation/msf-vsftpd.txt,shell root via 6200/tcp,aucune
+192.168.56.103,smb,CVE-2007-2447,exploit/multi/samba/usermap_script,exploitee,exploitation/msf-samba.txt,shell root via reverse TCP,aucune
+192.168.56.103,irc,CVE-2010-2075,exploit/unix/irc/unreal_ircd_3281_backdoor,exploitee,exploitation/msf-unreal.txt,shell root via reverse TCP,aucune
+192.168.56.103,distcc,CVE-2004-2687,exploit/unix/misc/distcc_exec,exploitee,exploitation/msf-distcc.txt,shell daemon,privileges non root
+192.168.56.103,ftp,CVE-2010-4221,searchsploit --cve,non_exploitee,cve-CVE-2010-4221.txt,version hors plage,CVE rejetee
+192.168.56.103,http,CVE-2011-3192,searchsploit --cve,non_exploitee,cve-CVE-2011-3192.txt,DoS interdit,hors perimetre
+192.168.56.103,http,CVE-2012-1823,searchsploit --cve,non_exploitee,cve-CVE-2012-1823.txt,CGI 403,conditionnelle
+192.168.56.103,ssl,CVE-2008-0166,searchsploit --cve,non_exploitee,cve-CVE-2008-0166.txt,validation de version,aucune cle exploitable
+192.168.56.103,noyau,CVE-2008-0600,searchsploit --cve,non_testee,cve-CVE-2008-0600.txt,privesc local,non testee
+192.168.56.103,noyau,CVE-2008-0010,searchsploit --cve,non_testee,cve-CVE-2008-0010.txt,privesc local,non testee
+192.168.56.103,noyau,CVE-2008-0009,searchsploit --cve,non_testee,cve-CVE-2008-0009.txt,privesc local,non testee
+192.168.56.1,hote,CVE-2021-4158,searchsploit --cve,hors_perimetre,cve-CVE-2021-4158.txt,DoS hote,ni Metasploitable 2 ni VirtualBox
+CSV
+head -1 resultats-cve-v3.csv
+wc -l resultats-cve-v3.csv
+awk -F, 'NR>1 {print $5}' resultats-cve-v3.csv | sort | uniq -c
+```
+
+**Explication de la commande**
+
+- `cat > resultats-cve-v3.csv <<'CSV'` : écrit le fichier CSV depuis l'entrée standard, dans le répertoire courant `~/preuves/ch1-lab7`.
+- `<<'CSV'` : heredoc avec le délimiteur `CSV` ; les guillemets empêchent l'expansion du shell.
+- `>` : écrase un éventuel fichier précédent au lieu de l'ajouter.
+- Les douze lignes suivantes : une ligne par CVE, avec les colonnes `cible`, `vecteur`, `cve`, `module_ou_commande`, `statut`, `preuve`, `resultat` et `limite`.
+- `head -1 resultats-cve-v3.csv` : affiche uniquement l'en-tête, pour vérifier l'ordre des colonnes.
+- `wc -l resultats-cve-v3.csv` : compte les lignes, en-tête compris ; la valeur attendue est `13`.
+- `awk -F, 'NR>1 {print $5}'` : découpe chaque ligne sur la virgule, ignore l'en-tête et affiche la cinquième colonne, `statut`.
+- `| sort | uniq -c` : trie les statuts et compte les occurrences de chaque valeur.
+- Piège courant : une virgule dans un champ décale les colonnes ; les champs `resultat` et `limite` ne doivent contenir aucune virgule.
+
+**Résultat attendu**
+
+```text
+cible,vecteur,cve,module_ou_commande,statut,preuve,resultat,limite
+13 resultats-cve-v3.csv
+4 exploitee
+1 hors_perimetre
+4 non_exploitee
+3 non_testee
+```
+
+Le compteur confirme 12 lignes de données : 4 `exploitee`, 4 `non_exploitee`, 3 `non_testee` et 1 `hors_perimetre`. L'ordre exact des compteurs après `sort` peut varier.
+
+**Preuve** — `preuves/ch1-lab7/cve-CVE-*.txt` (12 fichiers), `preuves/ch1-lab7/qualification-cve.txt` et `preuves/ch1-lab7/resultats-cve-v3.csv` (12 lignes de données).
 
 #### Étape 9 — Archiver les preuves sur l'hôte
 
