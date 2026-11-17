@@ -1,0 +1,58 @@
+# Ignore environment files with credentials
+.env
+
+# Ignore tracking database
+tracking.db
+
+# Ignore generated reports
+reports/
+
+# Ignore VirtualBox snapshots and state
+*.sav
+VMware/
+
+# Ignore OS specific files
+.DS_Store
+Thumbs.db
+
+# Ignore cache
+*.cache
+
+# Machines virtuelles et images disque (ne jamais versionner)
+**/vm/
+**/*.vdi
+**/*.vmdk
+**/*.vbox
+**/*.vbox-prev
+**/*.nvram
+**/*.vmsd
+**/*.vmx
+**/*.vmxf
+**/*.sav
+**/Snapshots/
+
+# Archives et projets externes
+*.zip
+
+# Images ISO et clés produit (ne jamais versionner)
+iso/
+*.iso
+*.ISO
+techniques-de-hacking-et-contre-mesure-main/
+techniques-de-hacking-niveau-1-main/
+.opencode/
+.git-remote-local.git/
+# RAG local (livres, texte extrait, index genere)
+books/
+sources/
+scripts/rag/index.sqlite
+extra.md
+syllabus.md
+CHANGELOG.md
+tracking.db
+tracking.json
+.gitignore
+AGENTS.md
+CONTEXT.md
+opencode.json
+
