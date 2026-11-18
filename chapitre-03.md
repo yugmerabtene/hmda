@@ -55,13 +55,25 @@ Chaque démonstration est rattachée à une tactique et une technique MITRE ATT&
 
 ```mermaid
 flowchart LR
-    A[Kali 192.168.56.101<br/>compte labuser] -->|Lab-01 LDAP<br/>comptes et SPN| B[(Windows Server 2016<br/>DC LAB.local<br/>192.168.56.102)]
-    B -->|Lab-02 Kerberoasting<br/>TGS du compte de service| C[Ticket TGS svc_web<br/>crackage hors ligne]
-    C -->|mot de passe svc_web| D[Accès SMB/LDAP<br/>LAB\svc_web]
-    D -->|Lab-03 Pass-the-Hash| E[Exécution distante<br/>sur le contrôleur de domaine]
-    E -->|Lab-04 secretsdump + PTH| F[Hachage Administrator<br/>contrôle du domaine]
-    F -->|création de compte| G[Compte labadmin<br/>élévation de privilèges]
-    G -->|Lab-05 détection| H[Événements Windows<br/>4768/4769/4624/4720<br/>rollback snapshot]
+    A["Kali 192.168.56.101
+compte labuser"] -->|Lab-01 LDAP
+comptes et SPN| B[(Windows Server 2016
+DC LAB.local
+192.168.56.102)]
+    B -->|Lab-02 Kerberoasting
+TGS du compte de service| C[Ticket TGS svc_web
+crackage hors ligne]
+    C -->|mot de passe svc_web| D["Accès SMB/LDAP
+LAB\\svc_web"]
+    D -->|Lab-03 Pass-the-Hash| E["Exécution distante
+sur le contrôleur de domaine"]
+    E -->|Lab-04 secretsdump + PTH| F["Hachage Administrator
+contrôle du domaine"]
+    F -->|création de compte| G["Compte labadmin
+élévation de privilèges"]
+    G -->|Lab-05 détection| H["Événements Windows
+4768/4769/4624/4720
+rollback snapshot"]
 ```
 
 **Fig 3.1** — Chaîne d'attaque du chapitre 3 : reconnaissance LDAP, Kerberoasting, Pass-the-Hash, dump des secrets du domaine, élévation de privilèges, détection et rollback.
@@ -70,11 +82,18 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    U[Utilisateur de domaine<br/>labuser] -->|1. TGS-REQ avec SPN| D[Contrôleur de domaine<br/>WS2016-DC.LAB.local]
-    D -->|2. Ticket TGS chiffré<br/>avec la clé NT du compte de service| U
-    U -->|3. Extraction du hachage TGS| F[Fichier krb5tgs<br/>hash hors ligne]
-    F -->|4. Crackage (wordlist,<br/>john / hashcat)| M[Mot de passe svc_web<br/>S3rviceWeb!]
-    M -->|5. Authentification<br/>SMB / LDAP| D
+    U["Utilisateur de domaine
+labuser"] -->|1. TGS-REQ avec SPN| D["Contrôleur de domaine
+WS2016-DC.LAB.local"]
+    D -->|2. Ticket TGS chiffré
+avec la clé NT du compte de service| U
+    U -->|3. Extraction du hachage TGS| F["Fichier krb5tgs
+hash hors ligne"]
+    F -->|4. Crackage wordlist
+john hashcat| M["Mot de passe svc_web
+S3rviceWeb!"]
+    M -->|5. Authentification
+SMB LDAP| D
 ```
 
 **Fig 3.2** — Flux Kerberoasting : demande de ticket TGS pour un SPN, extraction du hachage du compte de service et crackage hors ligne pour récupérer le mot de passe en clair.
