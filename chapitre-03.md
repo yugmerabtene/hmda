@@ -108,6 +108,61 @@ Règles de détection attendues (consolidées en fin de chapitre) :
 
 IOC du chapitre : adresse IP attaquant `192.168.56.101`, adresse IP victime `192.168.56.104`, port `4444`, protocole TCP brut, binaire `windows_xp_stageless.exe` (type PE32), chaînes de configuration C2 extraites par Ghidra.
 
+## 6. Section 0 bis — Installation de Wireshark sur la machine hôte (GUI)
+
+L'analyse graphique du trafic se fait depuis la machine hôte (Windows, macOS ou Linux) avec Wireshark en interface graphique. Kali sert de point de capture (tcpdump), l'hôte sert de poste d'analyse (Wireshark GUI).
+
+### 6.1 Installation de Wireshark sur Windows (hôte)
+
+1. Télécharger l'installeur Wireshark sur `https://www.wireshark.org/download.html` (version Windows 64-bit).
+2. Exécuter l'installeur en tant qu'administrateur.
+3. Lors de l'installation, **cocher impérativement « Install Npcap »** (nécessaire pour la capture de paquets sur les interfaces réseau).
+4. Accepter les contrats de licence, choisir les composants par défaut, terminer l'installation.
+5. Lancer Wireshark depuis le menu Démarrer.
+6. Dans l'écran d'accueil, lister les interfaces réseau : l'interface correspondant au réseau host-only `vboxnet0` de VirtualBox doit apparaître (souvent nommée « vboxnet0 » ou « VirtualBox Host-Only Network »).
+7. Sélectionner cette interface pour démarrer la capture.
+
+### 6.2 Installation de Wireshark sur macOS (hôte)
+
+1. Télécharger le fichier `.dmg` Wireshark sur `https://www.wireshark.org/download.html`.
+2. Ouvrir le `.dmg`, glisser l'icône Wireshark dans le dossier « Applications ».
+3. Lancer Wireshark depuis le Launchpad ou le dossier Applications.
+4. Lors du premier lancement, macOS peut demander l'autorisation d'accéder aux interfaces réseau : accorder les permissions dans « Préférences Système > Confidentialité et sécurité > Accès aux fichiers et dossiers » et « Accès au réseau ».
+5. Dans l'écran d'accueil de Wireshark, sélectionner l'interface correspondant au réseau host-only de VirtualBox pour démarrer la capture.
+
+### 6.3 Installation de Wireshark sur Linux (hôte)
+
+```bash
+# Mise à jour des dépôts et installation de Wireshark (interface graphique + tshark)
+sudo apt update
+sudo apt install -y wireshark tshark
+```
+
+Lors de l'installation, répondre **« Oui »** à la question « Allow non-superusers to capture packets ? » pour permettre la capture sans droits root. Si vous répondez « Non », ajouter votre utilisateur au groupe `wireshark` :
+
+```bash
+sudo usermod -aG wireshark $USER
+```
+
+Puis se déconnecter et se reconnecter pour appliquer le changement de groupe. Lancer Wireshark :
+
+```bash
+wireshark &
+```
+
+Dans l'écran d'accueil, sélectionner l'interface `vboxnet0` (ou l'interface correspondant au réseau host-only de VirtualBox) pour démarrer la capture.
+
+### 6.4 Ouverture d'un fichier pcap dans Wireshark GUI
+
+Une fois le fichier pcap capturé (depuis Kali avec tcpdump, voir Lab-01), le transférer vers la machine hôte (clé USB, dossier partagé, scp, etc.), puis :
+
+1. Lancer Wireshark sur l'hôte.
+2. Fichier > Ouvrir, sélectionner le fichier `.pcap` (ex. `capture-kali-xp.pcap`).
+3. Appliquer un filtre d'affichage dans la barre en haut (ex. `tcp.port == 4444`).
+4. Utiliser clic droit > « Suivre le flux TCP » pour examiner le contenu du reverse shell.
+
+---
+
 ## 6. Laboratoires du chapitre
 
 ## Lab-01 — Connectivité et capture du trafic inter-VM
