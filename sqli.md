@@ -100,11 +100,11 @@ Condition de sécurité : prenez le snapshot `avant-exploitation` de Metasploita
 
 **But** — Confirmer que DVWA répond sur le port 80 et que `curl` et `sqlmap` sont installés avant toute action offensive.
 
-**Machine** — Attaquant : hôte `192.168.56.1` (Kali `192.168.56.101` injoignable sur le réseau, exécution de secours depuis l'hôte). Cible : DVWA `192.168.56.103` (port 80).
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103` (port 80).
 
 **Prérequis** — Réseau fonctionnel (vboxnet0 ou pont), DVWA lancé, snapshot `avant-exploitation` pris sur Metasploitable 2.
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `$HOME`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `$HOME`
 
 **Commande testée**
 
@@ -138,11 +138,11 @@ HTTP 200
 
 **But** — Obtenir un cookie de session PHPSESSID et passer DVWA en niveau de sécurité `low` pour désactiver les protections d'entrée et de sortie.
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 1 réussie (`HTTP 200`), cookie jar `cookies.txt` absent ou vidé.
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande testée**
 
@@ -186,11 +186,11 @@ Security Level:</b> low
 
 **But** — Confirmer la présence d'un point d'injection en envoyant `'` `"` `;` `--` `#` et en observant les erreurs SQL de MySQL.
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 2 réussie, fichier `cookies.txt` contenant la session et le niveau `low`.
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande testée**
 
@@ -234,11 +234,11 @@ Un message d'erreur MySQL confirme que le paramètre `id` est injectable avec le
 
 **But** — Faire confirmer par sqlmap que le paramètre `id` est injectable et identifier le type d'injection et le SGBD.
 
-**Machine** — Attaquant : hôte `192.168.56.1` (Kali `192.168.56.101` injoignable). Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 3 réussie (point d'injection confirmé), variable `COOKIE_HEADER` construite (Étape 2).
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande**
 
@@ -273,11 +273,11 @@ DBMS: MySQL
 
 **But** — Lister les bases de données accessibles depuis le compte MySQL de l'application.
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 4 réussie (paramètre `id` identifié comme injectable).
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande**
 
@@ -303,11 +303,11 @@ available databases: [dvwa, information_schema, metasploit, mysql, owasp10, tiki
 
 **But** — Lister les tables de la base `dvwa`, puis les colonnes de la table `users`.
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 5 réussie (base `dvwa` identifiée).
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande**
 
@@ -355,11 +355,11 @@ Table: users
 
 **But** — Extraire les identifiants et mots de passe hashés de la table `users` sans tenter de casser les hashs.
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 6 réussie (table `users` et colonnes `user`, `password` identifiées).
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande**
 
@@ -403,11 +403,11 @@ Le hash `5f4dcc3b5aa765d61d8327deb882cf99` correspond au mot de passe de lab `pa
 
 **But** — Reproduire manuellement le mécanisme d'injection `UNION SELECT` pour comprendre ce que sqlmap automatise.
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 3 réussie (paramètre `id` injectable), fichier `cookies.txt` présent.
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande testée**
 
@@ -424,7 +424,7 @@ curl -sS -b cookies.txt -G "$DVWA_PAGE" \
 - `--data-urlencode "id=-1' UNION SELECT user,password FROM users #"` : injecte une requête `UNION SELECT` qui remplace les colonnes attendues par `user` et `password` de la table `users` ; `-1'` neutralise la requête légitime ; `#` commente le reste de la requête SQL originale.
 - `--data-urlencode 'Submit=Submit'` : paramètre de formulaire attendu par DVWA.
 - `-b cookies.txt` : envoie le cookie de session.
-- `grep -oE '(admin|gordonb|...)[^<]{0,60}` : extrait les noms d'utilisateurs apparus dans la page retournée.
+- `grep -oE '(admin|gordonb|...)[^<]{0,60}` : extrait les noms d'utilisateurs (logins) apparus dans la page retournée ; ce filtre ne remonte pas les hashs.
 - Piège : le caractère `#` doit être passé via `--data-urlencode` (encodage URL) pour ne pas être interprété par le shell ou couper l'URL.
 - Piège : la requête `UNION SELECT` doit retourner le même nombre de colonnes que la requête originale (`first_name`, `last_name`, soit 2 colonnes) ; sinon MySQL renvoie une erreur de nombre de colonnes.
 
@@ -438,17 +438,17 @@ pablo
 smithy
 ```
 
-La page affiche les noms d'utilisateurs issus de la table `users`. Les hashs MD5 associés ont également été exfiltrés (dont `admin` → `5f4dcc3b5aa765d61d8327deb882cf99`).
+La page affiche les noms d'utilisateurs issus de la table `users`. Les hashs MD5 associés ne sont pas extraits par cette commande `grep` (logins uniquement) ; ils ont été exfiltrés par sqlmap à l'Étape 7 (ou par une variante de la requête `UNION SELECT` incluant la colonne `password`).
 
 #### Étape 9 — Modification de données (`INSERT` puis `DELETE` via `--sql-shell`)
 
 **But** — Démontrer le mécanisme d'écriture (INSERT/DELETE) via le shell SQL interactif de sqlmap, dans le cadre réversible du snapshot `avant-exploitation` ; préciser que l'écriture via GET n'est pas garantie (dépend du pilote MySQL).
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 6 réussie (structure de la table `users` connue), snapshot `avant-exploitation` pris sur Metasploitable 2 avant l'étape (à restaurer après pour annuler toute modification).
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande**
 
@@ -485,17 +485,17 @@ sql> DELETE FROM users WHERE user='lab-test';
 L'INSERT et le DELETE ont été rejetés : le pilote PHP/MySQL (mysqli) de DVWA ne supporte pas les requêtes empilées (stacked queries). Aucune modification n'a été apportée à la base — le snapshot `avant-exploitation` n'a pas dû être restauré.
 
 
-> **Non testée en réel — écriture via GET non garantie.** `sqlmap` est installé sur Kali ; le `SELECT` fonctionne via `--sql-shell`, mais l'INSERT et le DELETE sont rejetés par le pilote `mysqli` de DVWA (requêtes empilées non supportées). Aucune modification de base n'a persisté.
+> **Testée en réel —** `SELECT` fonctionne, `INSERT` et `DELETE` rejetés par le pilote `mysqli` de DVWA (requêtes empilées non supportées). Aucune modification de base n'a persisté.
 
 #### Étape 10 — Tentative de lecture d'un fichier système (`--file-read`, `LOAD_FILE`)
 
 **But** — Tenter la lecture d'un fichier système (`/etc/passwd`) via MySQL `LOAD_FILE`, conditionnel aux privilèges `FILE` du compte MySQL et à `secure_file_priv`.
 
-**Machine** — Attaquant : hôte `192.168.56.1`. Cible : DVWA `192.168.56.103`.
+**Machine** — Attaquant : Kali `192.168.56.101`. Cible : DVWA `192.168.56.103`.
 
 **Prérequis** — Étape 4 réussie (point d'injection confirmé).
 
-> **Machine** : hôte `192.168.56.1` | **Terminal** : bash | **Utilisateur** : `yug` | **Répertoire** : `~/sqli-lab`
+> **Machine** : Kali `192.168.56.101` | **Terminal** : bash | **Utilisateur** : `root` | **Répertoire** : `~/sqli-lab`
 
 **Commande testée (via UNION SELECT manuel avec LOAD_FILE)**
 
@@ -523,11 +523,11 @@ root:x:0:0:root:/root:/bin/bash
 
 Le privilège `FILE` est disponible sur la cible ; le contenu de `/etc/passwd` a été lu via `LOAD_FILE`. Le shell cible (`/root:/bin/bash`) diffère du shell hôte, confirmant que la lecture provient de la machine cible (Metasploitable/DVWA), pas de l'hôte.
 
-> **Note sur sqlmap --file-read :** la commande `sqlmap ... --file-read /etc/passwd` n'a pas pu être testée car `sqlmap` est absent. La lecture ci-dessus a été réalisée manuellement par `UNION SELECT` + `LOAD_FILE`.
+> **Note sur sqlmap --file-read :** `sqlmap` est présent sur Kali (confirmé à l'Étape 1). Le test ci-dessus a été effectué manuellement avec `curl` + `LOAD_FILE` (équivalent de `--file-read`). `sqlmap` reste disponible pour `--file-read /etc/passwd` si nécessaire.
 
 #### Étape 11 — Craquage des hashs MD5 exfiltrés (hashcat)
 
-**But** — Craquer les hashs MD5 de la table `users` exfiltrés à l'Étape 7 avec hashcat en attaque par dictionnaire, exclusivement sur les données LAB-ONLY et dans le périmètre isolé du laboratoire `192.168.0/24`.
+**But** — Craquer les hashs MD5 de la table `users` exfiltrés à l'Étape 7 avec hashcat en attaque par dictionnaire, exclusivement sur les données LAB-ONLY et dans le périmètre isolé du laboratoire `192.168.56.0/24`.
 
 **Machine** — Attaquant : Kali `192.168.56.101` (crackage local uniquement ; aucune requête n'est envoyée vers DVWA `192.168.56.103`).
 
@@ -566,7 +566,7 @@ fi
 **Résultat obtenu (exécution réelle)**
 
 ```text
-hashcat (v7.1.2) starting in brute-force mode
+hashcat (v7.1.2) starting in dictionnaire mode
 
 Hashes: 1 hashes, 1 unique salts
 ...
