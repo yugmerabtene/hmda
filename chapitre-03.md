@@ -1023,7 +1023,7 @@ Durée estimée : 45 minutes.
 **Exemple de commande**
 
 ```bash
-prouve preuves/ch3-lab05/recup-payload.txt cp sources/payloads/windows_xp_stageless.exe preuves/ch3-lab05/windows_xp_stageless.exe && ls -l preuves/ch3-lab05/windows_xp_stageless.exe
+prouve preuves/ch3-lab05/recup-payload.txt cp /var/www/payloads/windows_xp_stageless.exe preuves/ch3-lab05/windows_xp_stageless.exe && ls -l preuves/ch3-lab05/windows_xp_stageless.exe
 ```
 
 **Explication de la commande**
@@ -1038,7 +1038,7 @@ prouve preuves/ch3-lab05/recup-payload.txt cp sources/payloads/windows_xp_stagel
 ```text
 # date: 2026-11-18T10:20:00+01:00
 # cmd: cp sources/payloads/windows_xp_stageless.exe preuves/ch3-lab05/windows_xp_stageless.exe && ls -l preuves/ch3-lab05/windows_xp_stageless.exe
--rw-r--r-- 1 kali kali 73830 nov. 18 10:20 preuves/ch3-lab05/windows_xp_stageless.exe
+-rw-r--r-- 1 kali kali 202650 nov. 18 10:20 preuves/ch3-lab05/windows_xp_stageless.exe
 # rc=0
 ```
 
@@ -1071,7 +1071,7 @@ prouve preuves/ch3-lab05/type-fichier.txt file preuves/ch3-lab05/windows_xp_stag
 ```text
 # date: 2026-11-18T10:20:05+01:00
 # cmd: file preuves/ch3-lab05/windows_xp_stageless.exe
-preuves/ch3-lab05/windows_xp_stageless.exe: PE32 executable (console) Intel 80386, for MS Windows
+preuves/ch3-lab05/windows_xp_stageless.exe: PE32 executable (GUI) Intel 80386, for MS Windows
 # rc=0
 ```
 
